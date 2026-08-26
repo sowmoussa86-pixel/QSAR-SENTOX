@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SENTOX - Profil chimique</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7f5;
+            color: #222;
+        }
+
+        .header {
+            background: #126b45;
+            color: white;
+            padding: 22px 18px;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 30px;
+            font-weight: bold;
+        }
+
+        .subtitle {
+            margin-top: 6px;
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            padding: 18px;
+        }
+
+        .plant-card {
+            background: white;
+            border-radius: 14px;
+            padding: 18px;
+            margin-bottom: 18px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .plant-name {
+            font-size: 21px;
+            font-weight: bold;
+        }
+
+        .plant-id {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .count {
+            margin-top: 12px;
+            font-weight: bold;
+            color: #126b45;
+        }
+
+        .search {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .search input {
+            flex: 1;
+            padding: 13px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            font-size: 15px;
+        }
+
+        .search button {
+            border: none;
+            border-radius: 10px;
+            padding: 0 18px;
+            background: #126b45;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .compound {
+            background: white;
+            border-radius: 14px;
+            padding: 17px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+        }
+
+        .compound-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #126b45;
+        }
+
+        .compound-class {
+            margin-top: 5px;
+            color: #555;
+        }
+
+        .compound-info {
+            margin-top: 12px;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .button {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 9px 14px;
+            background: #126b45;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+
+        .empty {
+            background: white;
+            padding: 25px;
+            text-align: center;
+            border-radius: 12px;
+            color: #777;
+        }
+
+        @media (min-width: 700px) {
+            .compound-list {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 14px;
+            }
+
+            .compound {
+                margin-bottom: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <div class="logo">SENTOX</div>
+        <div class="subtitle">
+            PROFIL CHIMIQUE – CONSTITUANTS ENRICHIS PAR PUBCHEM
+        </div>
+    </div>
+
+    <div class="container">
+
+        <div class="plant-card">
+
+            <div class="plant-name">
+                🌿 Acacia nilotica
+            </div>
+
+            <div class="plant-id">
+                ID : PL001
+            </div>
+
+            <div class="count">
+                Constituants enrichis : {{ nombre }}
+            </div>
+
+        </div>
+
+        <form class="search" method="GET" action="/">
+
+            <input
+                type="text"
+                name="q"
+                value="{{ recherche }}"
+                placeholder="🔎 Rechercher un constituant..."
+            >
+
+            <button type="submit">
+                Rechercher
+            </button>
+
+        </form>
+
+        {% if constituants %}
+
+        <div class="compound-list">
+
+            {% for constituant in constituants %}
+
+            <div class="compound">
+
+                <div class="compound-name">
+
+                    {{ constituant.get('Constituant', 'Constituant inconnu') }}
+
+                </div>
+
+                <div class="compound-class">
+
+                    {{ constituant.get('Classe_chimique', '') }}
+
+                </div>
+
+                <div class="compound-info">
+
+                    <strong>Nom PubChem :</strong>
+                    {{ constituant.get('Nom_PubChem', '') }}
+
+                    <br>
+
+                    <strong>CID :</strong>
+                    {{ constituant.get('CID', '') }}
+
+                    <br>
+
+                    <strong>Formule :</strong>
+                    {{ constituant.get('MolecularFormula', '') }}
+
+                    <br>
+
+                    <strong>Masse :</strong>
+                    {{ constituant.get('MolecularWeight', '') }}
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        {% else %}
+
+        <div class="empty">
+            Aucun constituant trouvé.
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</body>
+</html>

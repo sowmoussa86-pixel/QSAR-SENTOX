@@ -1,0 +1,9 @@
+Plant_ID,Nom_scientifique,Constituant,Classe_chimique,Partie_utilisee,Source,Statut
+PL001,Acacia nilotica,Quercétine,Flavonoïde,fruit,PubMed/revue scientifique,À vérifier
+PL001,Acacia nilotica,Rutine,Flavonoïde,fruit,PubMed/revue scientifique,À vérifier
+PL001,Acacia nilotica,Kaempférol,Flavonoïde,fruit,PubMed/revue scientifique,À vérifier
+PL001,Acacia nilotica,Naringénine,Flavonoïde,fruit,PubMed/revue scientifique,À vérifier
+PL001,Acacia nilotica,Catéchine,Flavan-3-ol,fruit,PubMed/revue scientifique,À vérifier
+PL001,Acacia nilotica,Épicatéchine,Flavan-3-ol,fruit,PubMed/revue scientifique,À vérifier
+PL001,Acacia nilotica,Acide gallique,Acide phénolique,fruit,PubMed/revue scientifique,À vérifier
+PL001,Acacia nilotica,Acide ellagique,Polyphénol,fruit,PubMed/revue scientifique,À vérifier
