@@ -3,7 +3,7 @@ from tkinter import ttk, messagebox
 import pandas as pd
 import os
 
-FICHIER = r"C:\SENTOX\data\constituants_enrichis.csv"
+FICHIER = "data/constituants_enrichis.csv"
 
 def charger_donnees():
     if not os.path.exists(FICHIER):
