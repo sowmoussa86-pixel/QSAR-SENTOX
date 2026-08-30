@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        SENTOX — {{ donnees.get('Nom_PubChem',
+        donnees.get('Constituant', 'Molécule')) }}
+    </title>
+
+    <style>
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #eef3f0;
+            color: #222;
+        }
+
+        .header {
+            background: #126b45;
+            color: white;
+            padding: 22px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            padding: 25px;
+        }
+
+        .title {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 18px rgba(0,0,0,.06);
+        }
+
+        .title h2 {
+            margin-top: 0;
+            color: #126b45;
+            font-size: 30px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 22px;
+            border-radius: 16px;
+            box-shadow: 0 4px 18px rgba(0,0,0,.06);
+        }
+
+        .card h3 {
+            color: #126b45;
+            margin-top: 0;
+        }
+
+        .value {
+            font-size: 18px;
+            margin: 10px 0;
+        }
+
+        .label {
+            font-weight: bold;
+        }
+
+        .smiles {
+            word-break: break-all;
+            background: #f1f5f3;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 7px 12px;
+            border-radius: 20px;
+            background: #e5f5ed;
+            color: #126b45;
+            font-weight: bold;
+        }
+
+        .section {
+            margin-top: 25px;
+        }
+
+        .back {
+            display: inline-block;
+            margin-top: 25px;
+            padding: 12px 18px;
+            background: #126b45;
+            color: white;
+            text-decoration: none;
+            border-radius: 9px;
+        }
+
+        @media(max-width: 700px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="header">
+    <h1>SENTOX</h1>
+    <p>Profil moléculaire et toxicologique</p>
+</div>
+
+<div class="container">
+
+    <section class="title">
+
+        <h2>
+            🧬
+            {{ donnees.get('Nom_PubChem',
+            donnees.get('Constituant', 'Molécule inconnue')) }}
+        </h2>
+
+        <p>
+            Profil moléculaire basé sur les données disponibles
+            dans la base SENTOX.
+        </p>
+
+        {% if donnees.get('PubChem_Statut') %}
+            <span class="status">
+                PubChem : {{ donnees.get('PubChem_Statut') }}
+            </span>
+        {% endif %}
+
+    </section>
+
+
+    <section class="grid">
+
+        <div class="card">
+
+            <h3>🔬 Identité</h3>
+
+            <div class="value">
+                <span class="label">Nom :</span>
+                {{ donnees.get('Nom_PubChem',
+                donnees.get('Constituant', '')) }}
+            </div>
+
+            <div class="value">
+                <span class="label">Nom IUPAC :</span>
+                {{ donnees.get('IUPAC_Name', '') }}
+            </div>
+
+            <div class="value">
+                <span class="label">CID PubChem :</span>
+                {{ donnees.get('PubChem_CID', '') }}
+            </div>
+
+            <div class="value">
+                <span class="label">Formule :</span>
+                {{ donnees.get('Formule_PubChem', '') }}
+            </div>
+
+            <div class="value">
+                <span class="label">Masse molaire :</span>
+                {{ donnees.get('Masse_molaire_PubChem', '') }}
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <h3>📊 Descripteurs moléculaires</h3>
+
+            <div class="value">
+                <span class="label">LogP :</span>
+                {{ donnees.get('RDKit_LogP',
+                donnees.get('LogP_PubChem', '')) }}
+            </div>
+
+            <div class="value">
+                <span class="label">HBD :</span>
+                {{ donnees.get('RDKit_HBD',
+                donnees.get('HBD_PubChem', '')) }}
+            </div>
+
+            <div class="value">
+                <span class="label">HBA :</span>
+                {{ donnees.get('RDKit_HBA',
+                donnees.get('HBA_PubChem', '')) }}
+            </div>
+
+            <div class="value">
+                <span class="label">TPSA :</span>
+                {{ donnees.get('RDKit_TPSA',
+                donnees.get('TPSA_PubChem', '')) }}
+            </div>
+
+            <div class="value">
+                <span class="label">Atomes lourds :</span>
+                {{ donnees.get('RDKit_Atomes_lourds',
+                donnees.get('Atomes_lourds_PubChem', '')) }}
+            </div>
+
+            <div class="value">
+                <span class="label">Anneaux :</span>
+                {{ donnees.get('RDKit_Anneaux',
+                donnees.get('Anneaux_PubChem', '')) }}
+            </div>
+
+            <div class="value">
+                <span class="label">Liaisons rotatables :</span>
+                {{ donnees.get('RDKit_Liaisons_rotatables',
+                donnees.get('Liaisons_rotatables_PubChem', '')) }}
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <section class="card section">
+
+        <h3>🧪 Structure chimique</h3>
+
+        <p class="label">SMILES :</p>
+
+        <div class="smiles">
+            {{ donnees.get('SMILES_isomerique',
+            donnees.get('SMILES', 'Non disponible')) }}
+        </div>
+
+    </section>
+
+
+    <section class="card section">
+
+        <h3>🤖 SENTOX-AI / QSAR</h3>
+
+        <p>
+            Cette molécule est prête pour l'étape suivante :
+        </p>
+
+        <ul>
+            <li>Analyse des descripteurs</li>
+            <li>Prédiction ADME</li>
+            <li>Prédiction toxicologique</li>
+            <li>Analyse des cibles biologiques</li>
+            <li>Recherche d'interactions</li>
+            <li>Évaluation du niveau d'incertitude</li>
+        </ul>
+
+        <p>
+            <strong>
+                Les prédictions seront distinguées des données
+                expérimentales et bibliographiques.
+            </strong>
+        </p>
+
+    </section>
+
+
+    <a class="back" href="/plantes">
+        ← Retour aux constituants
+    </a>
+
+</div>
+
+</body>
+</html>

@@ -255,7 +255,278 @@
             de <strong>SENTOX-AI / QSAR-SENTOX</strong>.
         </p>
     </section>
+<!-- =========================================================
+     SENTOX — MODES D'ANALYSE
+     ========================================================= -->
 
+<section class="sentox-analysis-section">
+
+    <h2 class="section-title">🔬 Analyse SENTOX</h2>
+
+    <p class="analysis-intro">
+        Entrez une plante, un extrait, une molécule, un médicament,
+        un aliment, un cosmétique, une substance ou un produit.
+        Les constituants chimiques n'ont pas besoin d'être connus à l'avance.
+    </p>
+
+    <!-- ==============================
+         MODE 1 : ANALYSE INDIVIDUELLE
+         ============================== -->
+
+    <div class="analysis-mode-card">
+
+        <h3>① Analyse individuelle</h3>
+
+        <p>
+            Analyse scientifique et prédictive d'un seul élément.
+        </p>
+
+        <form action="/analyse" method="POST">
+
+            <input
+                type="text"
+                name="element"
+                placeholder="Ex. ail, miel, quercétine, paracétamol..."
+                required
+            >
+
+            <select name="type">
+
+                <option value="auto">
+                    🔎 Identification automatique
+                </option>
+
+                <option value="plante">
+                    🌿 Plante
+                </option>
+
+                <option value="extrait">
+                    🧪 Extrait
+                </option>
+
+                <option value="molecule">
+                    🧬 Molécule
+                </option>
+
+                <option value="medicament">
+                    💊 Médicament
+                </option>
+
+                <option value="aliment">
+                    🍯 Aliment
+                </option>
+
+                <option value="cosmetique">
+                    🧴 Cosmétique
+                </option>
+
+                <option value="produit">
+                    📦 Produit
+                </option>
+
+                <option value="substance">
+                    ⚗️ Substance
+                </option>
+
+            </select>
+
+            <button type="submit">
+                Analyser avec SENTOX
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <!-- ==============================
+         MODE 2 : ANALYSE MULTIPLE
+         ============================== -->
+
+    <div class="analysis-mode-card">
+
+        <h3>② Analyse multi-produits / mélange</h3>
+
+        <p>
+            Analyse simultanée de plusieurs produits, plantes,
+            aliments, médicaments, molécules ou substances.
+        </p>
+
+        <form action="/analyse-melange" method="POST">
+
+            <div id="elements-container">
+
+                <div class="element-row">
+
+                    <input
+                        type="text"
+                        name="elements[]"
+                        placeholder="Produit A — Ex. miel"
+                        required
+                    >
+
+                    <select name="types[]">
+
+                        <option value="auto">
+                            Identification automatique
+                        </option>
+
+                        <option value="plante">🌿 Plante</option>
+                        <option value="extrait">🧪 Extrait</option>
+                        <option value="molecule">🧬 Molécule</option>
+                        <option value="medicament">💊 Médicament</option>
+                        <option value="aliment">🍯 Aliment</option>
+                        <option value="cosmetique">🧴 Cosmétique</option>
+                        <option value="produit">📦 Produit</option>
+                        <option value="substance">⚗️ Substance</option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+            <button
+                type="button"
+                onclick="ajouterElement()"
+                class="secondary-button"
+            >
+                ＋ Ajouter un élément
+            </button>
+
+            <button type="submit">
+                🧠 Analyser le mélange avec SENTOX-QSAR
+            </button>
+
+        </form>
+
+    </div>
+
+</section>
+
+
+<script>
+
+let compteurElements = 1;
+
+function ajouterElement() {
+
+    compteurElements++;
+
+    const container =
+        document.getElementById("elements-container");
+
+    const ligne =
+        document.createElement("div");
+
+    ligne.className = "element-row";
+
+    ligne.innerHTML = `
+
+        <input
+            type="text"
+            name="elements[]"
+            placeholder="Produit ${compteurElements}"
+            required
+        >
+
+        <select name="types[]">
+
+            <option value="auto">
+                Identification automatique
+            </option>
+
+            <option value="plante">🌿 Plante</option>
+            <option value="extrait">🧪 Extrait</option>
+            <option value="molecule">🧬 Molécule</option>
+            <option value="medicament">💊 Médicament</option>
+            <option value="aliment">🍯 Aliment</option>
+            <option value="cosmetique">🧴 Cosmétique</option>
+            <option value="produit">📦 Produit</option>
+            <option value="substance">⚗️ Substance</option>
+
+        </select>
+
+    `;
+
+    container.appendChild(ligne);
+}
+
+</script>
+    <section class="evidence-section">
+    <h2>🔬 Études scientifiques et prédictions SENTOX-QSAR</h2>
+
+    <div class="evidence-grid">
+
+        <!-- ÉTUDES EXISTANTES -->
+        <div class="evidence-card studies">
+            <div class="evidence-title">
+                📚 Études scientifiques
+            </div>
+
+            <p>
+                Synthèse des données disponibles dans la littérature scientifique
+                et des observations expérimentales déjà rapportées.
+            </p>
+
+            <ul>
+                <li>Activités biologiques documentées</li>
+                <li>Effets pharmacologiques connus</li>
+                <li>Toxicité rapportée</li>
+                <li>Interactions déjà décrites</li>
+                <li>Données ADME disponibles</li>
+                <li>Mécanismes moléculaires étudiés</li>
+            </ul>
+
+            <div class="evidence-label">
+                DONNÉES DOCUMENTÉES
+            </div>
+        </div>
+
+        <!-- PRÉDICTIONS -->
+        <div class="evidence-card predictions">
+            <div class="evidence-title">
+                🧠 Prédictions SENTOX-QSAR
+            </div>
+
+            <p>
+                Résultats générés par les modèles prédictifs de SENTOX-QSAR.
+                Ces résultats ne constituent pas des observations expérimentales.
+            </p>
+
+            <ul>
+                <li>Prédiction de toxicité</li>
+                <li>Prédiction ADME</li>
+                <li>Prédiction des cibles biologiques</li>
+                <li>Prédiction des interactions</li>
+                <li>Similarité moléculaire</li>
+                <li>Organes potentiellement ciblés</li>
+            </ul>
+
+            <div class="evidence-label">
+                PRÉDICTION — À INTERPRÉTER
+            </div>
+        </div>
+
+    </div>
+
+    <!-- CONCLUSION -->
+    <div class="sentox-conclusion">
+        <h3>🧪 Conclusion SENTOX</h3>
+
+        <p>
+            SENTOX-QSAR confronte les données scientifiques disponibles
+            aux résultats prédictifs afin de produire une interprétation
+            scientifique intégrée.
+        </p>
+
+        <p>
+            La conclusion distingue explicitement les données documentées,
+            les prédictions du modèle, le niveau d'incertitude et les limites
+            de l'analyse.
+        </p>
+    </div>
+</section>
     <h2 class="section-title"> Modules d'analyse</h2>
 
     <section class="modules">
@@ -360,7 +631,7 @@
 
         {% for constituant in constituants %}
 
-        <article class="compound">
+        <a class="compound" href="/molecule/{{ loop.index0 }}">
 
             <div class="compound-name">
                 {{ constituant.get('Constituant', 'Constituant inconnu') }}
@@ -387,7 +658,7 @@
                 {{ constituant.get('MolecularWeight', '') }}
             </div>
 
-        </article>
+        </a>
 
         {% endfor %}
 
