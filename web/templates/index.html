@@ -3,79 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>SENTOX - Profil chimique</title>
+    <title>SENTOX – Toxicologie prédictive et analyse des risques</title>
 
     <style>
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
         body {
             margin: 0;
             font-family: Arial, sans-serif;
             background: #f4f7f5;
-            color: #222;
+            color: #1f2933;
         }
 
         .header {
-            background: #126b45;
+            background: linear-gradient(135deg, #126b45, #0b8a58);
             color: white;
-            padding: 22px 18px;
+            padding: 28px 18px 34px;
             text-align: center;
         }
 
         .logo {
-            font-size: 30px;
-            font-weight: bold;
+            font-size: 36px;
+            font-weight: 800;
+            letter-spacing: 1px;
         }
 
         .subtitle {
-            margin-top: 6px;
-            font-size: 13px;
-            opacity: 0.9;
+            margin-top: 8px;
+            font-size: 14px;
+            opacity: .94;
         }
 
         .container {
-            max-width: 1100px;
+            max-width: 1150px;
             margin: auto;
-            padding: 18px;
+            padding: 22px 18px 45px;
         }
 
-        .plant-card {
+        .welcome {
             background: white;
-            border-radius: 14px;
-            padding: 18px;
-            margin-bottom: 18px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            border-radius: 18px;
+            padding: 24px;
+            margin-top: -22px;
+            position: relative;
+            box-shadow: 0 5px 20px rgba(0,0,0,.08);
         }
 
-        .plant-name {
-            font-size: 21px;
-            font-weight: bold;
-        }
-
-        .plant-id {
-            color: #666;
-            margin-top: 5px;
-        }
-
-        .count {
-            margin-top: 12px;
-            font-weight: bold;
+        .welcome h1 {
+            margin: 0 0 8px;
             color: #126b45;
+            font-size: 25px;
+        }
+
+        .welcome p {
+            margin: 0;
+            line-height: 1.6;
+            color: #5b6570;
+        }
+
+        .section-title {
+            margin: 30px 0 14px;
+            font-size: 21px;
+            color: #126b45;
+        }
+
+        .modules {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+        }
+
+        .module {
+            background: white;
+            border-radius: 15px;
+            padding: 18px;
+            min-height: 145px;
+            box-shadow: 0 2px 10px rgba(0,0,0,.07);
+            border: 1px solid #e5ebe8;
+        }
+
+        .module .icon {
+            font-size: 27px;
+        }
+
+        .module h3 {
+            margin: 9px 0 6px;
+            color: #126b45;
+            font-size: 17px;
+        }
+
+        .module p {
+            margin: 0;
+            color: #66727d;
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .ai {
+            background: linear-gradient(135deg, #126b45, #075b91);
+            color: white;
+            border: none;
+        }
+
+        .ai h3, .ai p {
+            color: white;
+        }
+
+        .analysis-types {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .type {
+            background: white;
+            border-left: 5px solid #126b45;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+
+        .type strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #126b45;
+        }
+
+        .search-box {
+            background: white;
+            padding: 18px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,.07);
+            margin-top: 28px;
         }
 
         .search {
             display: flex;
             gap: 8px;
-            margin-bottom: 20px;
         }
 
         .search input {
             flex: 1;
             padding: 13px;
-            border: 1px solid #ccc;
+            border: 1px solid #ccd5d0;
             border-radius: 10px;
             font-size: 15px;
         }
@@ -83,19 +153,25 @@
         .search button {
             border: none;
             border-radius: 10px;
-            padding: 0 18px;
+            padding: 0 20px;
             background: #126b45;
             color: white;
             font-weight: bold;
             cursor: pointer;
         }
 
+        .compound-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+            margin-top: 15px;
+        }
+
         .compound {
             background: white;
             border-radius: 14px;
             padding: 17px;
-            margin-bottom: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
         }
 
         .compound-name {
@@ -106,43 +182,54 @@
 
         .compound-class {
             margin-top: 5px;
-            color: #555;
+            color: #666;
         }
 
         .compound-info {
-            margin-top: 12px;
+            margin-top: 10px;
             font-size: 14px;
             line-height: 1.7;
         }
 
-        .button {
-            display: inline-block;
-            margin-top: 12px;
-            padding: 9px 14px;
-            background: #126b45;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-size: 13px;
-        }
-
         .empty {
             background: white;
-            padding: 25px;
+            padding: 22px;
             text-align: center;
             border-radius: 12px;
             color: #777;
         }
 
-        @media (min-width: 700px) {
-            .compound-list {
-                display: grid;
+        .footer {
+            text-align: center;
+            padding: 25px 15px;
+            color: #718096;
+            font-size: 13px;
+        }
+
+        @media (max-width: 900px) {
+            .modules,
+            .analysis-types {
                 grid-template-columns: repeat(2, 1fr);
-                gap: 14px;
+            }
+        }
+
+        @media (max-width: 650px) {
+            .modules,
+            .analysis-types,
+            .compound-list {
+                grid-template-columns: 1fr;
             }
 
-            .compound {
-                margin-bottom: 0;
+            .search {
+                flex-direction: column;
+            }
+
+            .search button {
+                padding: 12px;
+            }
+
+            .logo {
+                font-size: 30px;
             }
         }
     </style>
@@ -150,103 +237,169 @@
 
 <body>
 
-    <div class="header">
-        <div class="logo">SENTOX</div>
-        <div class="subtitle">
-            PROFIL CHIMIQUE – CONSTITUANTS ENRICHIS PAR PUBCHEM
-        </div>
+<header class="header">
+    <div class="logo">SENTOX</div>
+    <div class="subtitle">
+        Plateforme de toxicologie prédictive, pharmacologie, ADME et analyse des risques
     </div>
+</header>
 
-    <div class="container">
+<main class="container">
 
-        <div class="plant-card">
+    <section class="welcome">
+        <h1>Bienvenue dans SENTOX</h1>
+        <p>
+            Plateforme d'analyse scientifique permettant d'étudier une molécule,
+            une plante, un extrait, un produit ou une association de substances,
+            puis d'intégrer les données expérimentales et les prédictions
+            de <strong>SENTOX-AI / QSAR-SENTOX</strong>.
+        </p>
+    </section>
 
-            <div class="plant-name">
-                🌿 Acacia nilotica
-            </div>
+    <h2 class="section-title"> Modules d'analyse</h2>
 
-            <div class="plant-id">
-                ID : PL001
-            </div>
+    <section class="modules">
 
-            <div class="count">
-                Constituants enrichis : {{ nombre }}
-            </div>
+        <article class="module">
+            <div class="icon"></div>
+            <h3>Plantes</h3>
+            <p>Identification, parties utilisées, constituants, usages et profil toxicologique.</p>
+        </article>
 
+        <article class="module">
+            <div class="icon"></div>
+            <h3>Produits / Extraits</h3>
+            <p>Extraits végétaux, médicaments, cosmétiques, détergents et produits chimiques.</p>
+        </article>
+
+        <article class="module">
+            <div class="icon"></div>
+            <h3>Molécules</h3>
+            <p>Identité chimique, structure 2D/3D, propriétés, SMILES et molécules similaires.</p>
+        </article>
+
+        <article class="module">
+            <div class="icon"></div>
+            <h3>Toxicologie</h3>
+            <p>Toxicité disponible, valeurs de référence, doses et prédictions toxicologiques.</p>
+        </article>
+
+        <article class="module">
+            <div class="icon"></div>
+            <h3>Pharmacologie / ADME</h3>
+            <p>Activités biologiques, cibles, absorption, distribution, métabolisme et excrétion.</p>
+        </article>
+
+        <article class="module">
+            <div class="icon"></div>
+            <h3>Interactions</h3>
+            <p>Interactions plante–plante, plante–médicament, potentialisation et antagonisme.</p>
+        </article>
+
+        <article class="module">
+            <div class="icon"></div>
+            <h3>Environnement</h3>
+            <p>Impacts prédictifs sur l'eau, les sols, l'air, les végétaux et la faune.</p>
+        </article>
+
+        <article class="module ai">
+            <div class="icon"></div>
+            <h3>SENTOX-AI / QSAR</h3>
+            <p>Prédictions QSAR, analyse du risque, résultats, incertitude et interprétation.</p>
+        </article>
+
+    </section>
+
+    <h2 class="section-title"> Quatre niveaux d'analyse</h2>
+
+    <section class="analysis-types">
+
+        <div class="type">
+            <strong>① Molécule seule</strong>
+            Propriétés, ADME et toxicités prédictives.
         </div>
+
+        <div class="type">
+            <strong>② Plante / extrait</strong>
+            Analyse de l'ensemble des constituants et de leurs interactions.
+        </div>
+
+        <div class="type">
+            <strong>③ Association de plantes</strong>
+            Analyse d'une préparation contenant plusieurs plantes.
+        </div>
+
+        <div class="type">
+            <strong>④ Plante / produit + médicament</strong>
+            Analyse des interactions et des risques potentiels.
+        </div>
+
+    </section>
+
+    <section class="search-box">
+        <h2 class="section-title" style="margin-top:0;">
+             Explorer les constituants chimiques
+        </h2>
 
         <form class="search" method="GET" action="/">
-
             <input
                 type="text"
                 name="q"
                 value="{{ recherche }}"
-                placeholder="🔎 Rechercher un constituant..."
+                placeholder="Rechercher une molécule ou un constituant..."
             >
-
-            <button type="submit">
-                Rechercher
-            </button>
-
+            <button type="submit">Rechercher</button>
         </form>
+    </section>
 
-        {% if constituants %}
+    {% if constituants %}
 
-        <div class="compound-list">
+    <h2 class="section-title"> Constituants disponibles</h2>
 
-            {% for constituant in constituants %}
+    <div class="compound-list">
 
-            <div class="compound">
+        {% for constituant in constituants %}
 
-                <div class="compound-name">
+        <article class="compound">
 
-                    {{ constituant.get('Constituant', 'Constituant inconnu') }}
-
-                </div>
-
-                <div class="compound-class">
-
-                    {{ constituant.get('Classe_chimique', '') }}
-
-                </div>
-
-                <div class="compound-info">
-
-                    <strong>Nom PubChem :</strong>
-                    {{ constituant.get('Nom_PubChem', '') }}
-
-                    <br>
-
-                    <strong>CID :</strong>
-                    {{ constituant.get('CID', '') }}
-
-                    <br>
-
-                    <strong>Formule :</strong>
-                    {{ constituant.get('MolecularFormula', '') }}
-
-                    <br>
-
-                    <strong>Masse :</strong>
-                    {{ constituant.get('MolecularWeight', '') }}
-
-                </div>
-
+            <div class="compound-name">
+                {{ constituant.get('Constituant', 'Constituant inconnu') }}
             </div>
 
-            {% endfor %}
+            <div class="compound-class">
+                {{ constituant.get('Classe_chimique', '') }}
+            </div>
 
-        </div>
+            <div class="compound-info">
+                <strong>Nom PubChem :</strong>
+                {{ constituant.get('Nom_PubChem', '') }}
+                <br>
 
-        {% else %}
+                <strong>CID :</strong>
+                {{ constituant.get('CID', '') }}
+                <br>
 
-        <div class="empty">
-            Aucun constituant trouvé.
-        </div>
+                <strong>Formule :</strong>
+                {{ constituant.get('MolecularFormula', '') }}
+                <br>
 
-        {% endif %}
+                <strong>Masse :</strong>
+                {{ constituant.get('MolecularWeight', '') }}
+            </div>
+
+        </article>
+
+        {% endfor %}
 
     </div>
+
+    {% endif %}
+
+</main>
+
+<footer class="footer">
+    SENTOX — Toxicologie, santé, environnement et innovation scientifique
+</footer>
 
 </body>
 </html>
