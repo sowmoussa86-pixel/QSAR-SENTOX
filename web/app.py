@@ -1,11 +1,11 @@
 from flask import Flask, render_template, request
 import pandas as pd
 import os
-# =========================================================
-# SENTOX — MODULES SCIENTIFIQUES
-# =========================================================
-
 import sys
+
+# =========================================================
+# SENTOX — CONFIGURATION
+# =========================================================
 
 BASE_DIR = os.path.dirname(
     os.path.abspath(__file__)
@@ -19,101 +19,241 @@ QSAR_DIR = os.path.join(
 if QSAR_DIR not in sys.path:
     sys.path.insert(0, QSAR_DIR)
 
-from sentox_engine import analyser_element
-from sentox_interaction import analyser_melange_interactions
-from sentox_adme import analyser_adme_melange
-from sentox_toxicologie import analyser_toxicologie_melange
-from sentox_evidence import creer_fiche_scientifique
-from sentox_3d import analyser_melange_3d
+
+# =========================================================
+# SENTOX — MODULES SCIENTIFIQUES
+# =========================================================
+
+from sentox_engine import (
+    analyser_element,
+    analyser_melange
+)
+
+from sentox_interaction import (
+    analyser_melange_interactions
+)
+
+from sentox_adme import (
+    analyser_adme_melange
+)
+
+from sentox_toxicologie import (
+    analyser_toxicologie_melange
+)
+
+from sentox_evidence import (
+    creer_fiche_scientifique
+)
+
+from sentox_3d import (
+    analyser_melange_3d
+)
+
+
+# =========================================================
+# APPLICATION FLASK
+# =========================================================
+
 app = Flask(__name__)
 
-FICHIER = r"C:\SENTOX\data\constituants_enrichis.csv"
+
+# =========================================================
+# BASE DE DONNÉES SENTOX
+# =========================================================
+
+FICHIER = os.path.join(
+    BASE_DIR,
+    "data",
+    "constituants_enrichis.csv"
+)
 
 
 def charger_donnees():
+
     if not os.path.exists(FICHIER):
         return pd.DataFrame()
 
     try:
-        df = pd.read_csv(FICHIER)
-        df.columns = [str(c).strip() for c in df.columns]
+
+        df = pd.read_csv(
+            FICHIER
+        )
+
+        df.columns = [
+            str(c).strip()
+            for c in df.columns
+        ]
+
         return df.fillna("")
+
     except Exception:
+
         return pd.DataFrame()
 
+
+# =========================================================
+# ACCUEIL / RECHERCHE
+# =========================================================
 
 @app.route("/")
 def accueil():
 
     df = charger_donnees()
 
-    recherche = request.args.get("q", "").strip().lower()
+    recherche = request.args.get(
+        "q",
+        ""
+    ).strip().lower()
 
     if recherche:
+
         masque = df.astype(str).apply(
-            lambda ligne: ligne.str.lower().str.contains(
-                recherche,
-                na=False
-            )
+            lambda ligne:
+                ligne.str.lower().str.contains(
+                    recherche,
+                    na=False,
+                    regex=False
+                )
         ).any(axis=1)
 
         df = df[masque]
 
-    constituants = df.to_dict(orient="records")
+    constituants = df.to_dict(
+        orient="records"
+    )
 
     return render_template(
+
         "index.html",
+
         constituants=constituants,
+
         recherche=recherche,
-        nombre=len(constituants)
+
+        nombre=len(
+            constituants
+        )
     )
 
 
-@app.route("/constituant/<int:index>")
+# =========================================================
+# FICHE CONSTITUANT
+# =========================================================
+
+@app.route(
+    "/constituant/<int:index>"
+)
 def constituant(index):
 
     df = charger_donnees()
 
-    if index < 0 or index >= len(df):
-        return "Constituant introuvable", 404
+    if (
+        index < 0
+        or index >= len(df)
+    ):
 
-    donnees = df.iloc[index].to_dict()
+        return (
+            "Constituant introuvable",
+            404
+        )
+
+    donnees = df.iloc[
+        index
+    ].to_dict()
 
     return render_template(
+
         "fiche.html",
+
         donnees=donnees
     )
 
-@app.route("/molecule/<int:index>")
+
+# =========================================================
+# FICHE MOLÉCULE
+# =========================================================
+
+@app.route(
+    "/molecule/<int:index>"
+)
 def molecule(index):
+
     df = charger_donnees()
 
-    if index < 0 or index >= len(df):
-        return "Molécule introuvable", 404
+    if (
+        index < 0
+        or index >= len(df)
+    ):
 
-    donnees = df.iloc[index].to_dict()
+        return (
+            "Molécule introuvable",
+            404
+        )
+
+    donnees = df.iloc[
+        index
+    ].to_dict()
 
     return render_template(
+
         "molecule.html",
+
         donnees=donnees
     )
+
+
 # =========================================================
 # SENTOX — ANALYSE INDIVIDUELLE
 # =========================================================
 
-@app.route("/analyse", methods=["POST"])
+@app.route(
+    "/analyse",
+    methods=["POST"]
+)
 def analyse():
 
-    element = request.form.get("element", "").strip()
-    type_element = request.form.get("type", "auto")
+    element = request.form.get(
+        "element",
+        ""
+    ).strip()
+
+    type_element = request.form.get(
+        "type",
+        "auto"
+    ).strip()
 
     if not element:
-        return "Aucun élément fourni", 400
+
+        return (
+            "Aucun élément fourni",
+            400
+        )
+
+    # -----------------------------------------------------
+    # APPEL DU MOTEUR SENTOX
+    # -----------------------------------------------------
+
+    resultat = analyser_element(
+
+        element,
+
+        type_element
+    )
+
+    # -----------------------------------------------------
+    # AFFICHAGE
+    # -----------------------------------------------------
 
     return render_template(
+
         "analyse.html",
+
         element=element,
+
         type_element=type_element,
+
+        resultat=resultat,
+
         mode="individuel"
     )
 
@@ -122,34 +262,54 @@ def analyse():
 # SENTOX — ANALYSE MULTI-PRODUITS / MÉLANGE
 # =========================================================
 
-@app.route("/analyse-melange", methods=["POST"])
+@app.route(
+    "/analyse-melange",
+    methods=["POST"]
+)
 def analyse_melange():
 
     # -----------------------------------------------------
-    # 1. RÉCUPÉRATION DES DONNÉES DU FORMULAIRE
+    # 1. RÉCUPÉRATION
     # -----------------------------------------------------
 
-    elements = request.form.getlist("elements[]")
-    types = request.form.getlist("types[]")
+    elements = request.form.getlist(
+        "elements[]"
+    )
+
+    types = request.form.getlist(
+        "types[]"
+    )
 
     donnees = []
 
-    for i, element in enumerate(elements):
+    for i, element in enumerate(
+        elements
+    ):
 
         element = element.strip()
 
         if not element:
             continue
 
-        type_element = (
-            types[i].strip()
-            if i < len(types) and types[i].strip()
-            else "auto"
-        )
+        if (
+            i < len(types)
+            and types[i].strip()
+        ):
+
+            type_element = (
+                types[i].strip()
+            )
+
+        else:
+
+            type_element = "auto"
 
         donnees.append({
+
             "nom": element,
+
             "type": type_element
+
         })
 
     # -----------------------------------------------------
@@ -157,185 +317,270 @@ def analyse_melange():
     # -----------------------------------------------------
 
     if not donnees:
-        return "Aucun élément fourni", 400
+
+        return (
+            "Aucun élément fourni",
+            400
+        )
 
     # -----------------------------------------------------
-    # 3. ANALYSE INDIVIDUELLE
+    # 3. MOTEUR CENTRAL SENTOX
     # -----------------------------------------------------
 
-    df = charger_donnees()
-
-    analyses_individuelles = []
-
-    for element in donnees:
-
-        nom = element["nom"].lower()
-
-        constituants = []
-
-        if not df.empty:
-
-            # Recherche dans toutes les colonnes
-            masque = df.astype(str).apply(
-                lambda colonne:
-                    colonne.str.lower().str.contains(
-                        nom,
-                        na=False,
-                        regex=False
-                    )
-            ).any(axis=1)
-
-            resultats = df[masque]
-
-            constituants = resultats.to_dict(
-                orient="records"
-            )
-
-        analyses_individuelles.append({
-            "nom": element["nom"],
-            "type": element["type"],
-            "constituants": constituants
-        })
+    resultat = analyser_melange(
+        donnees
+    )
 
     # -----------------------------------------------------
-    # 4. CONSTITUANTS DU MÉLANGE
+    # 4. ANALYSES INDIVIDUELLES
     # -----------------------------------------------------
 
-    tous_constituants = []
-
-    for analyse in analyses_individuelles:
-
-        for constituant in analyse["constituants"]:
-
-            tous_constituants.append({
-                "produit": analyse["nom"],
-                "donnees": constituant
-            })
+    analyses_individuelles = (
+        resultat.get(
+            "elements",
+            []
+        )
+    )
 
     # -----------------------------------------------------
-    # 5. INTERACTIONS ENTRE LES ÉLÉMENTS
+    # 5. INTERACTIONS
     # -----------------------------------------------------
 
-    interactions = []
-
-    for i in range(len(donnees)):
-
-        for j in range(i + 1, len(donnees)):
-
-            produit_a = donnees[i]["nom"]
-            produit_b = donnees[j]["nom"]
-
-            interactions.append({
-                "produit_a": produit_a,
-                "produit_b": produit_b,
-
-                "interaction": "Analyse à effectuer",
-
-                "potentialisation":
-                    "Analyse à effectuer",
-
-                "antagonisme":
-                    "Analyse à effectuer",
-
-                "inhibition":
-                    "Analyse à effectuer",
-
-                "competition":
-                    "Analyse à effectuer",
-
-                "synergie":
-                    "Analyse à effectuer"
-            })
+    interactions = (
+        resultat.get(
+            "interactions",
+            []
+        )
+    )
 
     # -----------------------------------------------------
     # 6. ADME
     # -----------------------------------------------------
 
-    adme = {
-        "absorption": "Analyse à effectuer",
-        "distribution": "Analyse à effectuer",
-        "metabolisme": "Analyse à effectuer",
-        "excretion": "Analyse à effectuer"
-    }
-
-    # -----------------------------------------------------
-    # 7. ORGANES / CIBLES
-    # -----------------------------------------------------
-
-    organes = [
-        "Foie",
-        "Reins",
-        "Intestin",
-        "Système nerveux",
-        "Système cardiovasculaire"
-    ]
-
-    # -----------------------------------------------------
-    # 8. TOXICOLOGIE
-    # -----------------------------------------------------
-
-    toxicologie = {
-
-        "niveau":
-            "À déterminer par SENTOX-QSAR",
-
-        "risque":
-            "À déterminer par SENTOX-QSAR",
-
-        "organes_cibles":
-            organes
-    }
-
-    # -----------------------------------------------------
-    # 9. CONCLUSION
-    # -----------------------------------------------------
-
-    conclusion = (
-        "SENTOX a identifié les éléments introduits et recherché "
-        "les données disponibles dans sa base. Les analyses "
-        "d'interactions, ADME et toxicologiques doivent être "
-        "interprétées selon les données disponibles et le niveau "
-        "d'incertitude des modèles prédictifs."
+    adme = (
+        resultat.get(
+            "adme",
+            {}
+        )
     )
 
     # -----------------------------------------------------
-    # 10. AFFICHAGE
+    # 7. TOXICOLOGIE
+    # -----------------------------------------------------
+
+    toxicologie = (
+        resultat.get(
+            "toxicologie",
+            {}
+        )
+    )
+
+    # -----------------------------------------------------
+    # 8. CONCLUSION
+    # -----------------------------------------------------
+
+    conclusion = (
+        resultat.get(
+            "conclusion",
+            ""
+        )
+    )
+
+    # -----------------------------------------------------
+    # 9. CONSTITUANTS
+    # -----------------------------------------------------
+
+    tous_constituants = []
+
+    for analyse_element_resultat in (
+        analyses_individuelles
+    ):
+
+        identification = (
+            analyse_element_resultat.get(
+                "identification",
+                {}
+            )
+        )
+
+        nom = identification.get(
+            "nom_recherche",
+            ""
+        )
+
+        resultats_base = (
+            identification.get(
+                "resultats_base",
+                []
+            )
+        )
+
+        for constituant in resultats_base:
+
+            tous_constituants.append({
+
+                "produit": nom,
+
+                "donnees": constituant
+
+            })
+
+    # -----------------------------------------------------
+    # 10. ORGANES CIBLES
+    # -----------------------------------------------------
+
+    organes = []
+
+    for analyse_element_resultat in (
+        analyses_individuelles
+    ):
+
+        toxicologie_element = (
+            analyse_element_resultat.get(
+                "toxicologie",
+                {}
+            )
+        )
+
+        organes_element = (
+            toxicologie_element.get(
+                "organes_cibles",
+                []
+            )
+        )
+
+        for organe in organes_element:
+
+            if organe not in organes:
+
+                organes.append(
+                    organe
+                )
+
+    # -----------------------------------------------------
+    # 11. STRUCTURES MOLÉCULAIRES
+    # -----------------------------------------------------
+
+    structures_3d = []
+
+    for analyse_element_resultat in (
+        analyses_individuelles
+    ):
+
+        identification = (
+            analyse_element_resultat.get(
+                "identification",
+                {}
+            )
+        )
+
+        molecule = (
+            analyse_element_resultat.get(
+                "molecule",
+                {}
+            )
+        )
+
+        structures_3d.append({
+
+            "nom":
+                identification.get(
+                    "nom_recherche",
+                    ""
+                ),
+
+            "nom_identifie":
+                identification.get(
+                    "nom_identifie"
+                ),
+
+            "formule":
+                molecule.get(
+                    "formule_brute"
+                ),
+
+            "masse_molaire":
+                molecule.get(
+                    "masse_molaire"
+                ),
+
+            "smiles":
+                molecule.get(
+                    "smiles"
+                ),
+
+            "inchi":
+                molecule.get(
+                    "inchi"
+                ),
+
+            "structure_2d":
+                molecule.get(
+                    "structure_2d"
+                ),
+
+            "structure_3d":
+                molecule.get(
+                    "structure_3d"
+                ),
+
+            "descripteurs":
+                molecule.get(
+                    "descripteurs",
+                    {}
+                )
+
+        })
+
+    # -----------------------------------------------------
+    # 12. AFFICHAGE
     # -----------------------------------------------------
 
     return render_template(
 
         "analyse.html",
 
-        # Liste simple pour l'affichage
         elements=donnees,
 
-        # Analyse détaillée
-        analyses_individuelles=analyses_individuelles,
+        resultat=resultat,
 
-        # Constituants
-        tous_constituants=tous_constituants,
+        analyses_individuelles=(
+            analyses_individuelles
+        ),
 
-        # Interactions
-        interactions=interactions,
+        tous_constituants=(
+            tous_constituants
+        ),
 
-        # ADME
+        interactions=(
+            interactions
+        ),
+
         adme=adme,
 
-        # Organes
         organes=organes,
 
-        # Toxicologie
         toxicologie=toxicologie,
 
-        # Conclusion
+        structures_3d=structures_3d,
+
         conclusion=conclusion,
 
-        # Mode
         mode="melange"
     )
+
+
+# =========================================================
+# LANCEMENT
+# =========================================================
+
 if __name__ == "__main__":
+
     app.run(
+
         host="0.0.0.0",
+
         port=5000,
+
         debug=False
     )
