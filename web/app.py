@@ -1,7 +1,30 @@
 from flask import Flask, render_template, request
 import pandas as pd
 import os
+# =========================================================
+# SENTOX — MODULES SCIENTIFIQUES
+# =========================================================
 
+import sys
+
+BASE_DIR = os.path.dirname(
+    os.path.abspath(__file__)
+)
+
+QSAR_DIR = os.path.join(
+    BASE_DIR,
+    "qsar"
+)
+
+if QSAR_DIR not in sys.path:
+    sys.path.insert(0, QSAR_DIR)
+
+from sentox_engine import analyser_element
+from sentox_interaction import analyser_melange_interactions
+from sentox_adme import analyser_adme_melange
+from sentox_toxicologie import analyser_toxicologie_melange
+from sentox_evidence import creer_fiche_scientifique
+from sentox_3d import analyser_melange_3d
 app = Flask(__name__)
 
 FICHIER = r"C:\SENTOX\data\constituants_enrichis.csv"
