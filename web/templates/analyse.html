@@ -8,7 +8,7 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>Analyse SENTOX</title>
+    <title>SENTOX — Analyse scientifique</title>
 
     <style>
 
@@ -24,7 +24,12 @@
         }
 
         header {
-            background: linear-gradient(135deg, #075b3a, #0b7650);
+            background: linear-gradient(
+                135deg,
+                #075b3a,
+                #0b7650
+            );
+
             color: white;
             padding: 30px 20px;
             text-align: center;
@@ -41,8 +46,8 @@
         }
 
         main {
-            width: 90%;
-            max-width: 1100px;
+            width: 92%;
+            max-width: 1200px;
             margin: 30px auto;
         }
 
@@ -51,7 +56,9 @@
             border-radius: 14px;
             padding: 25px;
             margin-bottom: 25px;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+            box-shadow: 0 3px 12px rgba(
+                0,0,0,0.08
+            );
         }
 
         h2 {
@@ -67,23 +74,65 @@
             border-left: 5px solid #0b7650;
             background: #f8fbfa;
             padding: 15px;
-            margin-bottom: 12px;
+            margin-bottom: 15px;
             border-radius: 8px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns:
+                repeat(
+                    auto-fit,
+                    minmax(220px, 1fr)
+                );
+
+            gap: 15px;
+        }
+
+        .info-box {
+            background: #f7f9f8;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 18px;
+        }
+
+        .info-box strong {
+            display: block;
+            color: #075b3a;
+            margin-bottom: 8px;
         }
 
         .badge {
             display: inline-block;
             padding: 5px 10px;
             border-radius: 20px;
-            background: #e1f3eb;
-            color: #075b3a;
             font-size: 13px;
             margin-left: 8px;
         }
 
+        .documente {
+            background: #e1f3eb;
+            color: #075b3a;
+        }
+
+        .calcule {
+            background: #e8eefc;
+            color: #31558c;
+        }
+
+        .predit {
+            background: #fff1d6;
+            color: #8a5a00;
+        }
+
+        .indisponible {
+            background: #eeeeee;
+            color: #666;
+        }
+
         .prediction {
-            background: #eef8f4;
-            border-left: 5px solid #0b7650;
+            background: #fff8df;
+            border-left: 5px solid #d6a500;
             padding: 18px;
             border-radius: 8px;
         }
@@ -109,9 +158,17 @@
             border-radius: 8px;
         }
 
+        .molecule {
+            background: #f8fbff;
+            border: 1px solid #d9e3f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
         .interaction {
             border: 1px solid #ddd;
-            padding: 18px;
+            padding: 20px;
             margin-bottom: 15px;
             border-radius: 10px;
             background: #fafafa;
@@ -119,25 +176,6 @@
 
         .interaction strong {
             color: #075b3a;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 15px;
-        }
-
-        .info-box {
-            background: #f7f9f8;
-            border: 1px solid #e0e0e0;
-            border-radius: 10px;
-            padding: 18px;
-        }
-
-        .info-box strong {
-            display: block;
-            color: #075b3a;
-            margin-bottom: 8px;
         }
 
         table {
@@ -159,12 +197,15 @@
             color: white;
         }
 
-        tr:nth-child(even) {
-            background: #f8f8f8;
+        .empty {
+            color: #777;
+            font-style: italic;
         }
 
-        ul {
-            line-height: 1.8;
+        .score {
+            font-size: 28px;
+            font-weight: bold;
+            color: #075b3a;
         }
 
         .back {
@@ -179,9 +220,8 @@
             text-decoration: underline;
         }
 
-        .empty {
-            color: #777;
-            font-style: italic;
+        code {
+            word-break: break-all;
         }
 
         @media (max-width: 700px) {
@@ -201,7 +241,6 @@
             table {
                 font-size: 13px;
             }
-
         }
 
     </style>
@@ -211,13 +250,13 @@
 
 <body>
 
-
 <header>
 
     <h1>🧪 SENTOX</h1>
 
     <p>
-        Toxicologie prédictive • Pharmacologie • ADME • QSAR
+        Toxicologie • Pharmacologie • ADME • QSAR
+        • Analyse moléculaire
     </p>
 
 </header>
@@ -226,316 +265,394 @@
 <main>
 
 
-    <!-- =====================================================
-         TITRE
-         ===================================================== -->
+<!-- =====================================================
+     TITRE
+===================================================== -->
 
-    <div class="card">
+<div class="card">
 
-        <h2>🧪 Analyse du mélange</h2>
+    {% if mode == "individuel" %}
 
-        <p>
-            SENTOX analyse les éléments introduits individuellement,
-            recherche leurs constituants disponibles et évalue
-            les interactions potentielles ainsi que le profil
-            toxicologique global du mélange.
-        </p>
-
-    </div>
-
-
-    <!-- =====================================================
-         1. ELEMENTS INTRODUITS
-         ===================================================== -->
-
-    <div class="card">
-
-        <h2>🔬 1. Éléments analysés</h2>
-
-        {% if elements %}
-
-            {% for element in elements %}
-
-                <div class="element">
-
-                    <strong>
-                        {{ loop.index }}.
-                        {{ element.nom }}
-                    </strong>
-
-                    <span class="badge">
-                        {{ element.type }}
-                    </span>
-
-                </div>
-
-            {% endfor %}
-
-        {% else %}
-
-            <p class="empty">
-                Aucun élément n'a été fourni.
-            </p>
-
-        {% endif %}
-
-    </div>
-
-
-    <!-- =====================================================
-         2. DONNEES DOCUMENTEES
-         ===================================================== -->
-
-    <div class="card">
-
-        <h2>📚 2. Données documentées</h2>
+        <h2>
+            🔬 Analyse individuelle
+        </h2>
 
         <p>
-            Cette section présente les données retrouvées
-            dans la base scientifique disponible de SENTOX.
+            Élément analysé :
+            <strong>{{ element }}</strong>
         </p>
 
+    {% else %}
 
-        {% if analyses_individuelles %}
+        <h2>
+            🧪 Analyse multi-produits / mélange
+        </h2>
 
-            {% for analyse in analyses_individuelles %}
+        <p>
+            SENTOX analyse chaque élément,
+            ses constituants, ses propriétés
+            et les interactions potentielles
+            du mélange.
+        </p>
 
-                <div class="element">
+    {% endif %}
 
-                    <h3>
-                        {{ loop.index }}. {{ analyse.nom }}
-                    </h3>
+</div>
 
-                    <p>
-                        <strong>Type :</strong>
-                        {{ analyse.type }}
-                    </p>
 
+<!-- =====================================================
+     ANALYSE INDIVIDUELLE
+===================================================== -->
 
-                    {% if analyse.constituants %}
+{% if mode == "individuel" and resultat %}
 
-                        <h4>
-                            Constituants / données retrouvés :
-                        </h4>
+<div class="card">
 
-                        <table>
+    <h2>
+        🧪 1. Identification
+    </h2>
 
-                            <thead>
+    {% set identification =
+        resultat.identification
+    %}
 
-                                <tr>
+    <div class="grid">
 
-                                    {% for colonne in analyse.constituants[0].keys() %}
+        <div class="info-box">
 
-                                        <th>
-                                            {{ colonne }}
-                                        </th>
+            <strong>
+                Nom recherché
+            </strong>
 
-                                    {% endfor %}
+            {{ identification.nom_recherche }}
 
-                                </tr>
+        </div>
 
-                            </thead>
+        <div class="info-box">
 
+            <strong>
+                Nom identifié
+            </strong>
 
-                            <tbody>
+            {% if identification.nom_identifie %}
 
-                                {% for constituant in analyse.constituants %}
-
-                                    <tr>
-
-                                        {% for valeur in constituant.values() %}
-
-                                            <td>
-                                                {{ valeur }}
-                                            </td>
-
-                                        {% endfor %}
-
-                                    </tr>
-
-                                {% endfor %}
-
-                            </tbody>
-
-                        </table>
-
-                    {% else %}
-
-                        <p class="empty">
-                            Aucune donnée documentée retrouvée
-                            dans la base SENTOX pour cet élément.
-                        </p>
-
-                    {% endif %}
-
-                </div>
-
-            {% endfor %}
-
-        {% endif %}
-
-    </div>
-
-
-    <!-- =====================================================
-         3. CONSTITUANTS DU MELANGE
-         ===================================================== -->
-
-    <div class="card">
-
-        <h2>🧬 3. Constituants identifiés</h2>
-
-        {% if tous_constituants %}
-
-            <p>
-                SENTOX a retrouvé
-                <strong>{{ tous_constituants|length }}</strong>
-                entrée(s) associée(s) aux éléments du mélange.
-            </p>
-
-
-            {% for item in tous_constituants %}
-
-                <div class="info-box">
-
-                    <strong>
-                        {{ item.produit }}
-                    </strong>
-
-                    {% for cle, valeur in item.donnees.items() %}
-
-                        <div>
-                            <strong>{{ cle }} :</strong>
-                            {{ valeur }}
-                        </div>
-
-                    {% endfor %}
-
-                </div>
-
-                <br>
-
-            {% endfor %}
-
-        {% else %}
-
-            <p class="empty">
-                Aucun constituant n'a été retrouvé dans la base
-                disponible.
-            </p>
-
-        {% endif %}
-
-    </div>
-
-
-    <!-- =====================================================
-         4. SENTOX-QSAR
-         ===================================================== -->
-
-    <div class="card">
-
-        <h2>🤖 4. Analyse SENTOX-QSAR du mélange</h2>
-
-        <div class="prediction">
-
-            <p>
-                Les éléments du mélange sont comparés afin
-                d'identifier des interactions potentielles.
-            </p>
-
-
-            {% if interactions %}
-
-                {% for interaction in interactions %}
-
-                    <div class="interaction">
-
-                        <h3>
-                            {{ interaction.produit_a }}
-                            ↔
-                            {{ interaction.produit_b }}
-                        </h3>
-
-
-                        <div class="grid">
-
-                            <div class="info-box">
-
-                                <strong>
-                                    Interaction
-                                </strong>
-
-                                {{ interaction.interaction }}
-
-                            </div>
-
-
-                            <div class="info-box">
-
-                                <strong>
-                                    Potentialisation
-                                </strong>
-
-                                {{ interaction.potentialisation }}
-
-                            </div>
-
-
-                            <div class="info-box">
-
-                                <strong>
-                                    Antagonisme
-                                </strong>
-
-                                {{ interaction.antagonisme }}
-
-                            </div>
-
-
-                            <div class="info-box">
-
-                                <strong>
-                                    Inhibition
-                                </strong>
-
-                                {{ interaction.inhibition }}
-
-                            </div>
-
-
-                            <div class="info-box">
-
-                                <strong>
-                                    Compétition
-                                </strong>
-
-                                {{ interaction.competition }}
-
-                            </div>
-
-
-                            <div class="info-box">
-
-                                <strong>
-                                    Synergie
-                                </strong>
-
-                                {{ interaction.synergie }}
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                {% endfor %}
+                {{ identification.nom_identifie }}
 
             {% else %}
 
-                <p class="empty">
-                    Aucune paire d'interaction à analyser.
-                </p>
+                <span class="empty">
+                    Non disponible
+                </span>
+
+            {% endif %}
+
+        </div>
+
+        <div class="info-box">
+
+            <strong>
+                Type
+            </strong>
+
+            {{ identification.type }}
+
+        </div>
+
+        <div class="info-box">
+
+            <strong>
+                Statut
+            </strong>
+
+            <span class="badge
+                {% if identification.statut == 'documenté' %}
+                    documente
+                {% else %}
+                    indisponible
+                {% endif %}
+            ">
+
+                {{ identification.statut }}
+
+            </span>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     CONSTITUANTS
+===================================================== -->
+
+<div class="card">
+
+    <h2>
+        🧬 2. Constituants / données documentées
+    </h2>
+
+    {% if identification.resultats_base %}
+
+        <p>
+            SENTOX a retrouvé
+            <strong>
+                {{ identification.resultats_base|length }}
+            </strong>
+            entrée(s).
+        </p>
+
+        {% for ligne in identification.resultats_base %}
+
+            <div class="element">
+
+                {% for cle, valeur in ligne.items() %}
+
+                    {% if valeur %}
+
+                        <div>
+
+                            <strong>
+                                {{ cle }}
+                            </strong>
+
+                            :
+                            {{ valeur }}
+
+                        </div>
+
+                    {% endif %}
+
+                {% endfor %}
+
+            </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <p class="empty">
+            Aucune donnée documentée retrouvée
+            dans la base SENTOX.
+        </p>
+
+    {% endif %}
+
+</div>
+
+
+<!-- =====================================================
+     PHARMACOLOGIE
+===================================================== -->
+
+<div class="card">
+
+    <h2>
+        💊 3. Pharmacologie
+    </h2>
+
+    {% set pharma =
+        resultat.pharmacologie
+    %}
+
+    <div class="grid">
+
+        <div class="info-box">
+
+            <strong>
+                Principes actifs
+            </strong>
+
+            {% if pharma.principes_actifs %}
+
+                <ul>
+
+                {% for actif in
+                    pharma.principes_actifs %}
+
+                    <li>{{ actif }}</li>
+
+                {% endfor %}
+
+                </ul>
+
+            {% else %}
+
+                <span class="empty">
+                    Non disponible
+                </span>
+
+            {% endif %}
+
+        </div>
+
+
+        <div class="info-box">
+
+            <strong>
+                Mécanismes
+            </strong>
+
+            {% if pharma.mecanismes %}
+
+                <ul>
+
+                {% for mecanisme in
+                    pharma.mecanismes %}
+
+                    <li>{{ mecanisme }}</li>
+
+                {% endfor %}
+
+                </ul>
+
+            {% else %}
+
+                <span class="empty">
+                    Non disponible
+                </span>
+
+            {% endif %}
+
+        </div>
+
+
+        <div class="info-box">
+
+            <strong>
+                Cibles
+            </strong>
+
+            {% if pharma.cibles %}
+
+                <ul>
+
+                {% for cible in pharma.cibles %}
+
+                    <li>{{ cible }}</li>
+
+                {% endfor %}
+
+                </ul>
+
+            {% else %}
+
+                <span class="empty">
+                    Non disponible
+                </span>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     TOXICOLOGIE
+===================================================== -->
+
+<div class="card">
+
+    <h2>
+        ☠️ 4. Toxicologie
+    </h2>
+
+    {% set tox =
+        resultat.toxicologie
+    %}
+
+    <div class="grid">
+
+        <div class="info-box">
+
+            <strong>
+                Toxicité aiguë
+            </strong>
+
+            {% if tox.toxicite_aigue.valeur %}
+
+                {{ tox.toxicite_aigue.valeur }}
+
+                <span class="badge predit">
+                    {{ tox.toxicite_aigue.statut }}
+                </span>
+
+            {% else %}
+
+                <span class="empty">
+                    Non disponible
+                </span>
+
+            {% endif %}
+
+        </div>
+
+
+        <div class="info-box">
+
+            <strong>
+                DL50
+            </strong>
+
+            {% if tox.dl50.valeur %}
+
+                {{ tox.dl50.valeur }}
+
+                <span class="badge documente">
+                    {{ tox.dl50.statut }}
+                </span>
+
+            {% else %}
+
+                <span class="empty">
+                    Non disponible
+                </span>
+
+            {% endif %}
+
+        </div>
+
+
+        <div class="info-box">
+
+            <strong>
+                NOAEL
+            </strong>
+
+            {% if tox.noael.valeur %}
+
+                {{ tox.noael.valeur }}
+
+            {% else %}
+
+                <span class="empty">
+                    Non disponible
+                </span>
+
+            {% endif %}
+
+        </div>
+
+
+        <div class="info-box">
+
+            <strong>
+                LOAEL
+            </strong>
+
+            {% if tox.loael.valeur %}
+
+                {{ tox.loael.valeur }}
+
+            {% else %}
+
+                <span class="empty">
+                    Non disponible
+                </span>
 
             {% endif %}
 
@@ -544,54 +661,196 @@
     </div>
 
 
-    <!-- =====================================================
-         5. ADME
-         ===================================================== -->
+    <h3>
+        🫀 Organes cibles
+    </h3>
 
-    <div class="card">
+    {% if tox.organes_cibles %}
 
-        <h2>🧬 5. ADME du mélange</h2>
+        <ul>
 
-        <p>
-            Évaluation des principaux paramètres
-            pharmacocinétiques du mélange.
+        {% for organe in tox.organes_cibles %}
+
+            <li>
+                {{ organe }}
+            </li>
+
+        {% endfor %}
+
+        </ul>
+
+    {% else %}
+
+        <p class="empty">
+            Aucun organe cible documenté.
         </p>
 
+    {% endif %}
+
+</div>
+
+
+<!-- =====================================================
+     ADME
+===================================================== -->
+
+<div class="card">
+
+    <h2>
+        🧬 5. ADME
+    </h2>
+
+    <div class="grid">
+
+        {% for nom, valeur in
+            resultat.adme.items() %}
+
+            <div class="info-box">
+
+                <strong>
+                    {{ nom|capitalize }}
+                </strong>
+
+                {% if valeur.valeur %}
+
+                    {{ valeur.valeur }}
+
+                    <br>
+
+                    <span class="badge documente">
+                        {{ valeur.statut }}
+                    </span>
+
+                {% else %}
+
+                    <span class="empty">
+                        Non disponible
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     MOLÉCULE
+===================================================== -->
+
+<div class="card">
+
+    <h2>
+        🧪 6. Structure moléculaire
+    </h2>
+
+    {% set mol =
+        resultat.molecule
+    %}
+
+    <div class="molecule">
 
         <div class="grid">
 
             <div class="info-box">
 
-                <strong>Absorption</strong>
+                <strong>
+                    Formule brute
+                </strong>
 
-                {{ adme.absorption }}
+                {% if mol.formule_brute %}
 
-            </div>
+                    {{ mol.formule_brute }}
 
+                {% else %}
 
-            <div class="info-box">
+                    <span class="empty">
+                        Non disponible
+                    </span>
 
-                <strong>Distribution</strong>
-
-                {{ adme.distribution }}
-
-            </div>
-
-
-            <div class="info-box">
-
-                <strong>Métabolisme</strong>
-
-                {{ adme.metabolisme }}
+                {% endif %}
 
             </div>
 
 
             <div class="info-box">
 
-                <strong>Excrétion</strong>
+                <strong>
+                    Masse molaire
+                </strong>
 
-                {{ adme.excretion }}
+                {% if mol.masse_molaire %}
+
+                    {{ mol.masse_molaire }}
+                    g/mol
+
+                    {% if mol.masse_molaire_statut %}
+
+                        <br>
+
+                        <span class="badge calcule">
+                            {{ mol.masse_molaire_statut }}
+                        </span>
+
+                    {% endif %}
+
+                {% else %}
+
+                    <span class="empty">
+                        Non disponible
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+
+            <div class="info-box">
+
+                <strong>
+                    SMILES
+                </strong>
+
+                {% if mol.smiles %}
+
+                    <code>
+                        {{ mol.smiles }}
+                    </code>
+
+                {% else %}
+
+                    <span class="empty">
+                        Non disponible
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+
+            <div class="info-box">
+
+                <strong>
+                    InChI
+                </strong>
+
+                {% if mol.inchi %}
+
+                    <code>
+                        {{ mol.inchi }}
+                    </code>
+
+                {% else %}
+
+                    <span class="empty">
+                        Non disponible
+                    </span>
+
+                {% endif %}
 
             </div>
 
@@ -599,146 +858,991 @@
 
     </div>
 
+</div>
 
-    <!-- =====================================================
-         6. ORGANES ET CIBLES
-         ===================================================== -->
 
-    <div class="card">
+<!-- =====================================================
+     2D / 3D
+===================================================== -->
 
-        <h2>🫀 6. Organes et cibles potentiels</h2>
+<div class="card">
+
+    <h2>
+        🔎 7. Analyse structurale 2D / 3D
+    </h2>
+
+    <div class="grid">
+
+        <div class="info-box">
+
+            <strong>
+                🔬 Structure 2D
+            </strong>
+
+            {% if mol.structure_2d %}
+
+                <p>
+                    Statut :
+                    {{ mol.structure_2d.statut }}
+                </p>
+
+                {% if mol.structure_2d.smiles %}
+
+                    <code>
+                        {{ mol.structure_2d.smiles }}
+                    </code>
+
+                {% endif %}
+
+            {% else %}
+
+                <span class="empty">
+                    Non disponible
+                </span>
+
+            {% endif %}
+
+        </div>
+
+
+        <div class="info-box">
+
+            <strong>
+                🧊 Structure 3D
+            </strong>
+
+            {% if mol.structure_3d %}
+
+                <p>
+                    Statut :
+                    {{ mol.structure_3d.statut }}
+                </p>
+
+                {% if mol.structure_3d.smiles %}
+
+                    <code>
+                        {{ mol.structure_3d.smiles }}
+                    </code>
+
+                {% endif %}
+
+            {% else %}
+
+                <span class="empty">
+                    Non disponible
+                </span>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    <div class="warning">
+
+        <strong>
+            ⚠️ Interprétation
+        </strong>
 
         <p>
-            Organes potentiellement concernés selon
-            l'analyse prédictive actuelle.
+            La disponibilité d'une structure moléculaire
+            ne démontre pas à elle seule une interaction
+            biologique.
         </p>
 
-
-        {% if organes %}
-
-            <div class="grid">
-
-                {% for organe in organes %}
-
-                    <div class="info-box">
-
-                        🧬
-                        <strong>
-                            {{ organe }}
-                        </strong>
-
-                        Cible potentielle
-
-                    </div>
-
-                {% endfor %}
-
-            </div>
-
-        {% endif %}
-
     </div>
 
-
-    <!-- =====================================================
-         7. TOXICOLOGIE
-         ===================================================== -->
-
-    <div class="card">
-
-        <h2>☠️ 7. Toxicologie du mélange</h2>
-
-        <div class="danger">
-
-            <h3>
-                Niveau de risque
-            </h3>
-
-            <p>
-                <strong>
-                    {{ toxicologie.niveau }}
-                </strong>
-            </p>
-
-            <p>
-                {{ toxicologie.risque }}
-            </p>
-
-        </div>
+</div>
 
 
-        {% if toxicologie.organes_cibles %}
+<!-- =====================================================
+     SCORE
+===================================================== -->
 
-            <h3>
-                Organes potentiellement concernés
-            </h3>
+<div class="card">
 
-            <ul>
+    <h2>
+        📊 8. Évaluation préliminaire du risque
+    </h2>
 
-                {% for organe in toxicologie.organes_cibles %}
-
-                    <li>
-                        {{ organe }}
-                    </li>
-
-                {% endfor %}
-
-            </ul>
-
-        {% endif %}
-
-    </div>
-
-
-    <!-- =====================================================
-         8. CONCLUSION
-         ===================================================== -->
-
-    <div class="card">
-
-        <h2>🧠 Conclusion SENTOX</h2>
+    {% if resultat.score_risque %}
 
         <div class="success">
 
             <p>
-                {{ conclusion }}
+                Score SENTOX :
+            </p>
+
+            <div class="score">
+
+                {{ resultat.score_risque.score }}
+
+            </div>
+
+            <p>
+
+                Niveau :
+                <strong>
+                    {{ resultat.score_risque.niveau }}
+                </strong>
+
+            </p>
+
+            <small>
+
+                {{ resultat.score_risque.avertissement }}
+
+            </small>
+
+        </div>
+
+    {% else %}
+
+        <p class="empty">
+            Score non disponible.
+        </p>
+
+    {% endif %}
+
+</div>
+
+
+<!-- =====================================================
+     SOURCES
+===================================================== -->
+
+<div class="card">
+
+    <h2>
+        📚 9. Sources
+    </h2>
+
+    {% if resultat.sources %}
+
+        <ul>
+
+        {% for source in resultat.sources %}
+
+            <li>
+
+                {{ source.source }}
+
+                <span class="badge documente">
+                    {{ source.statut }}
+                </span>
+
+            </li>
+
+        {% endfor %}
+
+        </ul>
+
+    {% else %}
+
+        <p class="empty">
+            Aucune source explicitement identifiée
+            dans la base actuelle.
+        </p>
+
+    {% endif %}
+
+</div>
+
+
+<!-- =====================================================
+     CONCLUSION INDIVIDUELLE
+===================================================== -->
+
+<div class="card">
+
+    <h2>
+        🧠 10. Conclusion SENTOX
+    </h2>
+
+    <div class="success">
+
+        <p>
+            {{ resultat.conclusion }}
+        </p>
+
+    </div>
+
+</div>
+
+
+{% endif %}
+
+
+<!-- =====================================================
+     ANALYSE DU MÉLANGE
+===================================================== -->
+
+{% if mode == "melange" and resultat %}
+
+
+<div class="card">
+
+    <h2>
+        🔬 1. Éléments du mélange
+    </h2>
+
+    {% for element in elements %}
+
+        <div class="element">
+
+            <strong>
+                {{ loop.index }}.
+                {{ element.nom }}
+            </strong>
+
+            <span class="badge documente">
+                {{ element.type }}
+            </span>
+
+        </div>
+
+    {% endfor %}
+
+</div>
+
+
+<!-- =====================================================
+     ANALYSES INDIVIDUELLES
+===================================================== -->
+
+<div class="card">
+
+    <h2>
+        🧬 2. Analyse individuelle des composants
+    </h2>
+
+    {% if analyses_individuelles %}
+
+        {% for analyse in
+            analyses_individuelles %}
+
+            {% set ident =
+                analyse.identification
+            %}
+
+            <div class="element">
+
+                <h3>
+                    {{ loop.index }}.
+                    {{ ident.nom_recherche }}
+                </h3>
+
+                <p>
+
+                    Identification :
+
+                    {% if ident.nom_identifie %}
+
+                        <strong>
+                            {{ ident.nom_identifie }}
+                        </strong>
+
+                    {% else %}
+
+                        <span class="empty">
+                            Non disponible
+                        </span>
+
+                    {% endif %}
+
+                </p>
+
+
+                {% if ident.resultats_base %}
+
+                    <h4>
+                        Données documentées
+                    </h4>
+
+                    {% for ligne in
+                        ident.resultats_base %}
+
+                        <div class="info-box">
+
+                            {% for cle, valeur in
+                                ligne.items() %}
+
+                                {% if valeur %}
+
+                                    <div>
+
+                                        <strong>
+                                            {{ cle }}
+                                        </strong>
+
+                                        :
+                                        {{ valeur }}
+
+                                    </div>
+
+                                {% endif %}
+
+                            {% endfor %}
+
+                        </div>
+
+                        <br>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <p class="empty">
+                        Aucune donnée retrouvée.
+                    </p>
+
+                {% endif %}
+
+            </div>
+
+        {% endfor %}
+
+    {% endif %}
+
+</div>
+
+
+<!-- =====================================================
+     CONSTITUANTS
+===================================================== -->
+
+<div class="card">
+
+    <h2>
+        🧬 3. Constituants du mélange
+    </h2>
+
+    {% if tous_constituants %}
+
+        <p>
+
+            {{ tous_constituants|length }}
+            entrée(s) retrouvée(s).
+
+        </p>
+
+        {% for item in tous_constituants %}
+
+            <div class="info-box">
+
+                <strong>
+                    {{ item.produit }}
+                </strong>
+
+                {% for cle, valeur in
+                    item.donnees.items() %}
+
+                    {% if valeur %}
+
+                        <div>
+
+                            <strong>
+                                {{ cle }}
+                            </strong>
+
+                            :
+                            {{ valeur }}
+
+                        </div>
+
+                    {% endif %}
+
+                {% endfor %}
+
+            </div>
+
+            <br>
+
+        {% endfor %}
+
+    {% else %}
+
+        <p class="empty">
+            Aucun constituant retrouvé.
+        </p>
+
+    {% endif %}
+
+</div>
+
+
+<!-- =====================================================
+     INTERACTIONS
+===================================================== -->
+
+<div class="card">
+
+    <h2>
+        ⚠️ 4. Interactions du mélange
+    </h2>
+
+    <div class="prediction">
+
+        <p>
+            SENTOX examine les paires d'éléments
+            et prépare l'analyse des interactions.
+        </p>
+
+    </div>
+
+
+    {% if interactions %}
+
+        {% for interaction in interactions %}
+
+            <div class="interaction">
+
+                <h3>
+
+                    {{ interaction.element_a }}
+
+                    ↔
+
+                    {{ interaction.element_b }}
+
+                </h3>
+
+
+                <div class="grid">
+
+                    <div class="info-box">
+
+                        <strong>
+                            Interaction
+                        </strong>
+
+                        {{ interaction.interaction }}
+
+                    </div>
+
+
+                    <div class="info-box">
+
+                        <strong>
+                            Potentialisation
+                        </strong>
+
+                        {{ interaction.potentialisation }}
+
+                    </div>
+
+
+                    <div class="info-box">
+
+                        <strong>
+                            Antagonisme
+                        </strong>
+
+                        {{ interaction.antagonisme }}
+
+                    </div>
+
+
+                    <div class="info-box">
+
+                        <strong>
+                            Inhibition
+                        </strong>
+
+                        {{ interaction.inhibition }}
+
+                    </div>
+
+
+                    <div class="info-box">
+
+                        <strong>
+                            Compétition
+                        </strong>
+
+                        {{ interaction.competition }}
+
+                    </div>
+
+
+                    <div class="info-box">
+
+                        <strong>
+                            Synergie
+                        </strong>
+
+                        {{ interaction.synergie }}
+
+                    </div>
+
+                </div>
+
+
+                {% if interaction.liaison_moleculaire %}
+
+                    <h3>
+                        🔗 Liaison moléculaire
+                    </h3>
+
+                    <div class="info-box">
+
+                        <strong>
+                            Statut
+                        </strong>
+
+                        {{ interaction.liaison_moleculaire.statut }}
+
+                        {% if interaction.liaison_moleculaire.resultat %}
+
+                            <p>
+                                {{
+                                    interaction.liaison_moleculaire.resultat
+                                }}
+                            </p>
+
+                        {% endif %}
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <p class="empty">
+            Aucune paire à analyser.
+        </p>
+
+    {% endif %}
+
+</div>
+
+
+<!-- =====================================================
+     ADME DU MÉLANGE
+===================================================== -->
+
+<div class="card">
+
+    <h2>
+        🧬 5. ADME du mélange
+    </h2>
+
+    <div class="grid">
+
+        {% for nom, valeur in adme.items() %}
+
+            <div class="info-box">
+
+                <strong>
+                    {{ nom|capitalize }}
+                </strong>
+
+                {% if valeur is mapping %}
+
+                    {% if valeur.valeur %}
+
+                        {{ valeur.valeur }}
+
+                        <span class="badge
+                            {% if valeur.statut == 'documenté' %}
+                                documente
+                            {% elif valeur.statut == 'calculé' %}
+                                calcule
+                            {% elif valeur.statut == 'prédit' %}
+                                predit
+                            {% else %}
+                                indisponible
+                            {% endif %}
+                        ">
+
+                            {{ valeur.statut }}
+
+                        </span>
+
+                    {% else %}
+
+                        <span class="empty">
+                            Non disponible
+                        </span>
+
+                    {% endif %}
+
+                {% else %}
+
+                    {{ valeur }}
+
+                {% endif %}
+
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     ORGANES CIBLES
+===================================================== -->
+
+<div class="card">
+
+    <h2>
+        🫀 6. Organes / cibles potentiels
+    </h2>
+
+    {% if organes %}
+
+        <div class="grid">
+
+        {% for organe in organes %}
+
+            <div class="info-box">
+
+                <strong>
+                    🧬 {{ organe }}
+                </strong>
+
+                Cible potentielle
+
+            </div>
+
+        {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <p class="empty">
+            Aucun organe cible documenté.
+        </p>
+
+    {% endif %}
+
+</div>
+
+
+<!-- =====================================================
+     STRUCTURES MOLÉCULAIRES DU MÉLANGE
+===================================================== -->
+
+<div class="card">
+
+    <h2>
+        🔎 7. Structures moléculaires du mélange
+    </h2>
+
+    {% if structures_3d %}
+
+        {% for molecule in structures_3d %}
+
+            <div class="molecule">
+
+                <h3>
+                    {{ molecule.nom }}
+                </h3>
+
+                <div class="grid">
+
+                    <div class="info-box">
+
+                        <strong>
+                            Formule
+                        </strong>
+
+                        {{ molecule.formule
+                           or "Non disponible" }}
+
+                    </div>
+
+
+                    <div class="info-box">
+
+                        <strong>
+                            Masse molaire
+                        </strong>
+
+                        {% if molecule.masse_molaire %}
+
+                            {{ molecule.masse_molaire }}
+                            g/mol
+
+                        {% else %}
+
+                            Non disponible
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="info-box">
+
+                        <strong>
+                            SMILES
+                        </strong>
+
+                        {% if molecule.smiles %}
+
+                            <code>
+                                {{ molecule.smiles }}
+                            </code>
+
+                        {% else %}
+
+                            Non disponible
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="info-box">
+
+                        <strong>
+                            2D
+                        </strong>
+
+                        {% if molecule.structure_2d %}
+
+                            {{ molecule.structure_2d.statut }}
+
+                        {% else %}
+
+                            Non disponible
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="info-box">
+
+                        <strong>
+                            3D
+                        </strong>
+
+                        {% if molecule.structure_3d %}
+
+                            {{ molecule.structure_3d.statut }}
+
+                        {% else %}
+
+                            Non disponible
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <p class="empty">
+            Aucune structure moléculaire disponible.
+        </p>
+
+    {% endif %}
+
+</div>
+
+
+<!-- =====================================================
+     TOXICOLOGIE GLOBALE
+===================================================== -->
+
+<div class="card">
+
+    <h2>
+        ☠️ 8. Toxicologie globale du mélange
+    </h2>
+
+    <div class="danger">
+
+        <p>
+            Niveau global :
+        </p>
+
+        <div class="score">
+
+            {{ toxicologie.niveau }}
+
+        </div>
+
+        {% if toxicologie.score is defined %}
+
+            <p>
+
+                Score préliminaire :
+                <strong>
+                    {{ toxicologie.score }}
+                </strong>
+
+            </p>
+
+        {% endif %}
+
+        <p>
+
+            Statut :
+            {{ toxicologie.statut }}
+
+        </p>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     CONCLUSION
+===================================================== -->
+
+<div class="card">
+
+    <h2>
+        🧠 9. Conclusion SENTOX
+    </h2>
+
+    <div class="success">
+
+        <p>
+            {{ conclusion }}
+        </p>
+
+    </div>
+
+
+    <div class="warning">
+
+        <strong>
+            ⚠️ Important
+        </strong>
+
+        <p>
+
+            Les résultats documentés,
+            calculés et prédits sont
+            explicitement distingués.
+
+        </p>
+
+        <p>
+
+            Une prédiction SENTOX-QSAR
+            ne constitue pas une preuve
+            expérimentale.
+
+        </p>
+
+        <p>
+
+            Une véritable interaction
+            moléculaire nécessitera,
+            lorsque pertinent, une
+            validation par des méthodes
+            appropriées telles que la
+            chimio-informatique,
+            le docking ou des essais
+            expérimentaux.
+
+        </p>
+
+    </div>
+
+</div>
+
+
+{% endif %}
+
+
+<!-- =====================================================
+     LÉGENDE SENTOX
+===================================================== -->
+
+<div class="card">
+
+    <h2>
+        📊 Légende des niveaux de preuve
+    </h2>
+
+    <div class="grid">
+
+        <div class="info-box">
+
+            <span class="badge documente">
+                DOCUMENTÉ
+            </span>
+
+            <p>
+                Donnée provenant d'une source
+                ou de la base scientifique.
             </p>
 
         </div>
 
 
-        <div class="warning">
+        <div class="info-box">
 
-            <strong>⚠️ Important</strong>
+            <span class="badge calcule">
+                CALCULÉ
+            </span>
 
             <p>
-                Une prédiction SENTOX-QSAR ne constitue pas
-                une preuve expérimentale.
+                Résultat obtenu par une
+                formule déterministe.
             </p>
 
+        </div>
+
+
+        <div class="info-box">
+
+            <span class="badge predit">
+                PRÉDIT
+            </span>
+
             <p>
-                Les interactions, effets toxicologiques et
-                paramètres ADME prédits doivent être interprétés
-                selon le niveau d'incertitude du modèle et,
-                lorsque nécessaire, confirmés expérimentalement.
+                Résultat issu d'un modèle
+                ou d'une estimation.
+            </p>
+
+        </div>
+
+
+        <div class="info-box">
+
+            <span class="badge indisponible">
+                NON DISPONIBLE
+            </span>
+
+            <p>
+                Aucune donnée exploitable
+                actuellement disponible.
             </p>
 
         </div>
 
     </div>
 
+</div>
 
-    <!-- =====================================================
-         RETOUR
-         ===================================================== -->
 
-    <a href="/" class="back">
-        ← Retour à l'accueil
-    </a>
+<a href="/" class="back">
+    ← Retour à l'accueil
+</a>
 
 
 </main>
-
 
 </body>
 
