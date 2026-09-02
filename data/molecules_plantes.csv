@@ -1,0 +1,22 @@
+Molecule_ID,Nom_molecule,Plant_ID,Nom_plante,Classe_chimique,SMILES,InChI,PubChem_CID,Formule,Masse_molaire,Source,Statut_preuve
+MP-0001,Abrasine,PAO2020-001,Abrus precatorius,Alcaloïde,,,,,Pharmacopée de l'Afrique de l'Ouest 2020,Documenté
+MP-0002,Hyalophorine,PAO2020-001,Abrus precatorius,Alcaloïde,,,,,Pharmacopée de l'Afrique de l'Ouest 2020,Documenté
+MP-0003,Methyl ester of N,N-dimethyltryptophan,PAO2020-001,Abrus precatorius,Alcaloïde,,,,,Pharmacopée de l'Afrique de l'Ouest 2020,Documenté
+MP-0004,Picatorine,PAO2020-001,Abrus precatorius,Alcaloïde,,,,,Pharmacopée de l'Afrique de l'Ouest 2020,Documenté
+MP-0005,Prescacin,PAO2020-001,Abrus precatorius,Alcaloïde,,,,,Pharmacopée de l'Afrique de l'Ouest 2020,Documenté
+MP-0006,Trigonelline,PAO2020-001,Abrus precatorius,Alcaloïde,,,,,Pharmacopée de l'Afrique de l'Ouest 2020,Documenté
+MP-0007,Abrin,PAO2020-001,Abrus precatorius,Protéine toxique,,,,,Pharmacopée de l'Afrique de l'Ouest 2020,Documenté
+MP-0008,Urease,PAO2020-001,Abrus precatorius,Enzyme,,,,,Pharmacopée de l'Afrique de l'Ouest 2020,Documenté
+MP-0009,Oleanolic acid,PAO2020-001,Abrus precatorius,Triterpène,,,,,Pharmacopée de l'Afrique de l'Ouest 2020,Documenté
+MP-0010,Abruslactone A,PAO2020-001,Abrus precatorius,Triterpène,,,,,Pharmacopée de l'Afrique de l'Ouest 2020,Documenté
+MP-0011,Beta-amyrin,PAO2020-001,Abrus precatorius,Triterpène,,,,,Pharmacopée de l'Afrique de l'Ouest 2020,Documenté
+MP-0012,Cycloartenol,PAO2020-001,Abrus precatorius,Triterpène,,,,,Pharmacopée de l'Afrique de l'Ouest 2020,Documenté
+MP-0013,Hederagenin,PAO2020-001,Abrus precatorius,Triterpène,,,,,Pharmacopée de l'Afrique de l'Ouest 2020,Documenté
+MP-0014,Physcion,PAO2020-006,Cassia sieberiana,Anthraquinone,,,,,Pharmacopée de l'Afrique de l'Ouest 2020,Documenté
+MP-0015,Rhein,PAO2020-006,Cassia sieberiana,Anthraquinone,,,,,Pharmacopée de l'Afrique de l'Ouest 2020,Documenté
+MP-0016,Chrysophanol,PAO2020-006,Cassia sieberiana,Anthraquinone,,,,,Pharmacopée de l'Afrique de l'Ouest 2020,Documenté
+MP-0017,Quercitrin,PAO2020-006,Cassia sieberiana,Flavonoïde,,,,,Pharmacopée de l'Afrique de l'Ouest 2020,Documenté
+MP-0018,Isoquercitrin,PAO2020-006,Cassia sieberiana,Flavonoïde,,,,,Pharmacopée de l'Afrique de l'Ouest 2020,Documenté
+MP-0019,Epiafzelechin,PAO2020-006,Cassia sieberiana,Flavonoïde,,,,,Pharmacopée de l'Afrique de l'Ouest 2020,Documenté
+MP-0020,Epicatechol,PAO2020-006,Cassia sieberiana,Polyphénol,,,,,Pharmacopée de l'Afrique de l'Ouest 2020,Documenté
+MP-0021,Leucopelargonidol,PAO2020-006,Cassia sieberiana,Flavonoïde,,,,,Pharmacopée de l'Afrique de l'Ouest 2020,Documenté
