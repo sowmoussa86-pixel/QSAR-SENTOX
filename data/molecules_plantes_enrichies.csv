@@ -1,0 +1,22 @@
+﻿Molecule_ID,Nom_molecule,Plant_ID,Nom_plante,Classe_chimique,SMILES,InChI,PubChem_CID,Formule,Masse_molaire,Source,Statut_preuve,InChIKey,PubChem_status
+MP-0001,Abrasine,PAO2020-001,Abrus precatorius,Alcaloïde,,,,,PAO 2020,Documenté,,,NON_TROUVE
+MP-0002,Hyalophorine,PAO2020-001,Abrus precatorius,Alcaloïde,,,,,PAO 2020,Documenté,,,NON_TROUVE
+MP-0003,Ester méthylique de N,N-diméthyltryptophane,PAO2020-001,Abrus precatorius,Alcaloïde,,,,,PAO 2020,Documenté,,NON_TROUVE
+MP-0004,Picatorine,PAO2020-001,Abrus precatorius,Alcaloïde,,,,,PAO 2020,Documenté,,,NON_TROUVE
+MP-0005,Préscacine,PAO2020-001,Abrus precatorius,Alcaloïde,,,,,PAO 2020,Documenté,,,NON_TROUVE
+MP-0006,Trigonelline,PAO2020-001,Abrus precatorius,Alcaloïde,,"InChI=1S/C7H7NO2/c1-8-4-2-3-6(5-8)7(9)10/h2-5H,1H3",5570,C7H7NO2,137.14,Documenté,,WWNNZCOKKKDOPX-UHFFFAOYSA-N,TROUVE
+MP-0007,Abrin,PAO2020-001,Abrus precatorius,Protéine toxique,,,,,PAO 2020,Documenté,,,NON_TROUVE
+MP-0008,Uréase,PAO2020-001,Abrus precatorius,Enzyme,,,,,PAO 2020,Documenté,,,NON_TROUVE
+MP-0009,Acide oléanolique,PAO2020-001,Abrus precatorius,Triterpénoïde,,,,,PAO 2020,Documenté,,,NON_TROUVE
+MP-0010,Abruslactone A,PAO2020-001,Abrus precatorius,Triterpénoïde,,"InChI=1S/C30H46O3/c1-25(2)20-10-13-30(7)21(28(20,5)12-11-22(25)31)9-8-18-19-16-26(3)17-23(33-24(26)32)27(19,4)14-15-29(18,30)6/h8,19-23,31H,9-17H2,1-7H3/t19-,20-,21+,22+,23-,26-,27+,28-,29+,30+/m0/s1",44575701,C30H46O3,454.7,Documenté,,HHQJBWYXBWOFJY-SXKKXCELSA-N,TROUVE
+MP-0011,Bêta-amyrine,PAO2020-001,Abrus precatorius,Triterpénoïde,,,,,PAO 2020,Documenté,,,NON_TROUVE
+MP-0012,Cycloarténol,PAO2020-001,Abrus precatorius,Triterpénoïde,,,,,PAO 2020,Documenté,,,NON_TROUVE
+MP-0013,Hédéragénine,PAO2020-001,Abrus precatorius,Triterpénoïde,,,,,PAO 2020,Documenté,,,NON_TROUVE
+MP-0014,Physcion,PAO2020-006,Cassia sieberiana,Anthraquinone,,"InChI=1S/C16H12O5/c1-7-3-9-13(11(17)4-7)16(20)14-10(15(9)19)5-8(21-2)6-12(14)18/h3-6,17-18H,1-2H3",10639,C16H12O5,284.26,Documenté,,FFWOKTFYGVYKIR-UHFFFAOYSA-N,TROUVE
+MP-0015,Rhéine,PAO2020-006,Cassia sieberiana,Anthraquinone,,,,,PAO 2020,Documenté,,,NON_TROUVE
+MP-0016,Chrysophanol,PAO2020-006,Cassia sieberiana,Anthraquinone,,"InChI=1S/C15H10O4/c1-7-5-9-13(11(17)6-7)15(19)12-8(14(9)18)3-2-4-10(12)16/h2-6,16-17H,1H3",10208,C15H10O4,254.24,Documenté,,LQGUBLBATBMXHT-UHFFFAOYSA-N,TROUVE
+MP-0017,Quercitrine,PAO2020-006,Cassia sieberiana,Flavonoïde,,,,,PAO 2020,Documenté,,,NON_TROUVE
+MP-0018,Isoquercitrine,PAO2020-006,Cassia sieberiana,Flavonoïde,,,,,PAO 2020,Documenté,,,NON_TROUVE
+MP-0019,Epiafzélechine,PAO2020-006,Cassia sieberiana,Flavonoïde,,,,,PAO 2020,Documenté,,,NON_TROUVE
+MP-0020,Épicatéchol,PAO2020-006,Cassia sieberiana,Polyphénol,,,,,PAO 2020,Documenté,,,NON_TROUVE
+MP-0021,Leucopélargonidol,PAO2020-006,Cassia sieberiana,Flavonoïde,,,,,PAO 2020,Documenté,,,NON_TROUVE
