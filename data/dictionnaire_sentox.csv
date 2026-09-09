@@ -1,0 +1,81 @@
+Domaine;Table;Champ;Type;Unite;Description;Source;Statut_preuve;Obligatoire;Exemple
+Identification;plantes;Plant_ID;texte;;Identifiant unique de la plante;SENTOX;documente;oui;PL001
+Identification;plantes;Nom_scientifique;texte;;Nom scientifique accepté;Pharmacopée/Littérature;documente;oui;Acacia nilotica
+Identification;plantes;Synonymes;texte;;Synonymes botaniques connus;Littérature;documente;non;Acacia arabica
+Identification;plantes;Famille;texte;;Famille botanique;Pharmacopée;documente;non;Fabaceae
+Identification;plantes;Partie_utilisee;texte;;Partie de la plante utilisée;Pharmacopée/Littérature;documente;non;Fruit
+Identification;plantes;Pays;texte;;Pays ou zone d'origine;SENTOX/Littérature;documente;non;Sénégal
+Identification;plantes;Statut;texte;;Statut de la donnée botanique;SENTOX;documente;non;Validé
+
+Constituants;constituants_plantes;Constituant;texte;;Nom du constituant chimique;Littérature/PubChem;documente;oui;Quercétine
+Constituants;constituants_plantes;Plant_ID;texte;;Identifiant de la plante source;SENTOX;documente;oui;PL001
+Constituants;constituants_plantes;Classe_chimique;texte;;Classe chimique du constituant;Littérature;documente;non;Flavonoïde
+Constituants;constituants_plantes;Partie_plante;texte;;Partie végétale contenant le constituant;Littérature;documente;non;Fruit
+Constituants;constituants_plantes;Role_constituant;texte;;Rôle documenté ou supposé du constituant;Littérature;documente;non;Actif
+
+Molecules;molecules;CID;entier;;Identifiant PubChem;PubChem;documente;non;5280343
+Molecules;molecules;Nom_PubChem;texte;;Nom enregistré dans PubChem;PubChem;documente;non;Quercetin
+Molecules;molecules;MolecularFormula;texte;;Formule moléculaire;PubChem;documente;non;C15H10O7
+Molecules;molecules;MolecularWeight;nombre;g/mol;Masse moléculaire;PubChem;documente;non;302.24
+Molecules;molecules;SMILES;texte;;Représentation moléculaire SMILES;PubChem;documente;non;C1=CC...
+Molecules;molecules;InChI;texte;;Identifiant InChI;PubChem;documente;non;InChI=1S/...
+Molecules;molecules;IUPACName;texte;;Nom IUPAC;PubChem;documente;non;...
+Molecules;molecules;Structure_2D;texte;;Référence ou représentation 2D;PubChem/SENTOX;documente;non;Disponible
+Molecules;molecules;Structure_3D;texte;;Disponibilité d'une structure 3D;PubChem/SENTOX;documente;non;Disponible
+
+QSAR;descripteurs_qsar;Masse_molaire;nombre;g/mol;Masse moléculaire utilisée par le modèle;Calcul/PubChem;calcule;oui;302.24
+QSAR;descripteurs_qsar;LogP;nombre;;Coefficient de partage octanol/eau;PubChem/Calcul;calcule;non;1.5
+QSAR;descripteurs_qsar;HBD;entier;;Nombre de donneurs de liaison hydrogène;Calcul;calcule;non;5
+QSAR;descripteurs_qsar;HBA;entier;;Nombre d'accepteurs de liaison hydrogène;Calcul;calcule;non;7
+QSAR;descripteurs_qsar;TPSA;nombre;Å²;Surface polaire topologique;Calcul;calcule;non;131.0
+QSAR;descripteurs_qsar;Atomes;entier;;Nombre d'atomes;Calcul;calcule;non;32
+QSAR;descripteurs_qsar;Anneaux;entier;;Nombre de cycles;Calcul;calcule;non;3
+
+Pharmacologie;pharmacologie;Activite;texte;;Activité biologique rapportée;Littérature;documente;non;Antioxydante
+Pharmacologie;pharmacologie;Cible;texte;;Cible biologique associée;Littérature;documente;non;COX-2
+Pharmacologie;pharmacologie;Mecanisme;texte;;Mécanisme d'action proposé ou documenté;Littérature;documente;non;Inhibition enzymatique
+Pharmacologie;pharmacologie;Indication;texte;;Indication ou effet biologique rapporté;Littérature;documente;non;Anti-inflammatoire
+
+Toxicologie;toxicologie;LD50_mg_kg;nombre;mg/kg;Dose létale médiane rapportée;Littérature;documente;non;2000
+Toxicologie;toxicologie;NOAEL;nombre;mg/kg/j;Dose sans effet indésirable observé;Littérature;documente;non;100
+Toxicologie;toxicologie;LOAEL;nombre;mg/kg/j;Dose minimale avec effet indésirable observé;Littérature;documente;non;300
+Toxicologie;toxicologie;Toxicite_aigue;texte;;Niveau de toxicité aiguë;Littérature/QSAR;documente/predit;non;Faible
+Toxicologie;toxicologie;Toxicite_chronique;texte;;Données de toxicité chronique;Littérature/QSAR;documente/predit;non;Non disponible
+Toxicologie;toxicologie;Organe_cible;texte;;Organe potentiellement affecté;Littérature/QSAR;documente/predit;non;Foie
+Toxicologie;toxicologie;Voie_exposition;texte;;Voie d'exposition étudiée;Littérature;documente;non;Orale
+
+ADME;adme;Absorption;texte;;Profil d'absorption;Littérature/QSAR;documente/predit;non;Élevée
+ADME;adme;Distribution;texte;;Profil de distribution;Littérature/QSAR;documente/predit;non;À déterminer
+ADME;adme;Metabolisme;texte;;Métabolisme prévu ou documenté;Littérature/QSAR;documente/predit;non;Hépatique
+ADME;adme;Excretion;texte;;Voie d'excrétion;Littérature/QSAR;documente/predit;non;Rénale
+ADME;adme;CYP;texte;;Enzymes CYP impliquées;Littérature/QSAR;documente/predit;non;CYP3A4
+
+Interactions;interactions;Molecule_A;texte;;Premier élément de l'interaction;SENTOX;calcule;oui;Quercétine
+Interactions;interactions;Molecule_B;texte;;Deuxième élément de l'interaction;SENTOX;calcule;oui;Paracétamol
+Interactions;interactions;Type_interaction;texte;;Type d'interaction identifié ou prédit;Littérature/QSAR;documente/predit;oui;Inhibition
+Interactions;interactions;Potentialisation;texte;;Possibilité de potentialisation;Littérature/QSAR;documente/predit;non;À déterminer
+Interactions;interactions;Antagonisme;texte;;Possibilité d'antagonisme;Littérature/QSAR;documente/predit;non;À déterminer
+Interactions;interactions;Competition;texte;;Possibilité de compétition;Littérature/QSAR;documente/predit;non;À déterminer
+Interactions;interactions;Synergie;texte;;Hypothèse de synergie;Littérature/QSAR;predit;non;Hypothèse
+
+Evidence;evidence;Source;texte;;Source de l'information;PubChem/Littérature;documente;oui;PubChem
+Evidence;evidence;Reference;texte;;Référence bibliographique ou identifiant;Littérature;documente;non;DOI
+Evidence;evidence;Type_preuve;texte;;Nature de la preuve;SENTOX;documente;oui;Expérimental
+Evidence;evidence;Niveau_confiance;texte;;Niveau de confiance associé au résultat;SENTOX;calcule;non;Élevé
+
+Prediction;prediction;Modele;texte;;Modèle utilisé pour la prédiction;SENTOX-QSAR;documente;oui;QSAR
+Prediction;prediction;Prediction;nombre;;Valeur prédite par le modèle;SENTOX-QSAR;predit;non;0.72
+Prediction;prediction;Score_confiance;nombre;;Confiance associée à la prédiction;SENTOX-QSAR;calcule;non;0.81
+Prediction;prediction;Domaine_applicabilite;texte;;Indication sur l'applicabilité du modèle;SENTOX-QSAR;calcule;non;Dans le domaine
+
+Melange;melanges;Melange_ID;texte;;Identifiant unique du mélange;SENTOX;calcule;oui;MIX001
+Melange;melanges;Composants;texte;;Liste des composants du mélange;SENTOX;documente;oui;Miel|Ail|Paracétamol
+Melange;melanges;Proportions;texte;;Proportions connues des composants;Utilisateur/Littérature;documente;non;1:1:1
+Melange;melanges;Risque_global;texte;;Synthèse du profil de risque du mélange;SENTOX;calcule;non;À déterminer
+Melange;melanges;Conclusion;texte;;Conclusion scientifique de l'analyse;SENTOX;calcule;non;À interpréter
+
+Environnement;environnement;Eau;texte;;Impact potentiel sur les milieux aquatiques;Littérature/QSAR;predit;non;À déterminer
+Environnement;environnement;Sol;texte;;Impact potentiel sur les sols;Littérature/QSAR;predit;non;À déterminer
+Environnement;environnement;Air;texte;;Impact potentiel atmosphérique;Littérature/QSAR;predit;non;À déterminer
+Environnement;environnement;Faune;texte;;Impact potentiel sur la faune;Littérature/QSAR;predit;non;À déterminer
+Environnement;environnement;Vegetaux;texte;;Impact potentiel sur les végétaux;Littérature/QSAR;predit;non;À déterminer
