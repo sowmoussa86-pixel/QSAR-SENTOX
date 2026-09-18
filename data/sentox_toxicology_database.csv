@@ -1,0 +1,2 @@
+CID,Nom,SMILES,Endpoint,Valeur,Unite,Espece,Voie_exposition,Type_exposition,Duree,Source,Reference,Qualite_donnee,Statut
+887,Methanol,CO,LD50,5628,mg/kg,Non précisée,orale,aiguë,Non précisée,PubChem/HSDB,Prototype historique,À vérifier,Documentée
