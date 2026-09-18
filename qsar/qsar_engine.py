@@ -39,53 +39,60 @@ def calculer_descripteurs(smiles):
     }
 
 
-# Lecture de la base
-df = pd.read_csv(INPUT_FILE)
+def calculer_descripteurs_sur_base():
+    # Lecture de la base
+    df = pd.read_csv(INPUT_FILE)
 
-print("\n===================================")
-print("        SENTOX-QSAR")
-print("===================================")
-print(f"Nombre de molécules : {len(df)}")
+    print("\n===================================")
+    print("        SENTOX-QSAR")
+    print("===================================")
+    print(f"Nombre de molécules : {len(df)}")
 
-# Calcul des descripteurs
-resultats = df["SMILES"].apply(calculer_descripteurs)
+    # Calcul des descripteurs
+    resultats = df["SMILES"].apply(calculer_descripteurs)
 
-descripteurs = pd.DataFrame(resultats.tolist())
+    descripteurs = pd.DataFrame(resultats.tolist())
 
-# Remplacement des anciennes valeurs par les calculs RDKit
-for colonne in descripteurs.columns:
-    df[colonne] = descripteurs[colonne]
+    # Remplacement des anciennes valeurs par les calculs RDKit
+    for colonne in descripteurs.columns:
+        df[colonne] = descripteurs[colonne]
 
-# Sauvegarde
-df.to_csv(OUTPUT_FILE, index=False)
+    # Sauvegarde
+    df.to_csv(OUTPUT_FILE, index=False)
 
-print("\nDescripteurs calculés avec RDKit.")
-print(f"Fichier créé : {OUTPUT_FILE}")
+    print("\nDescripteurs calculés avec RDKit.")
+    print(f"Fichier créé : {OUTPUT_FILE}")
 
-print("\nAperçu :")
-print(
-    df[
-        [
-            "ID",
-            "Nom",
-            "SMILES",
-            "Masse_molaire",
-            "LogP",
-            "HBD",
-            "HBA",
-            "Atomes",
-            "TPSA",
-            "Anneaux"
-        ]
-    ].head(10).to_string(index=False)
-)
+    print("\nAperçu :")
+    print(
+        df[
+            [
+                "ID",
+                "Nom",
+                "SMILES",
+                "Masse_molaire",
+                "LogP",
+                "HBD",
+                "HBA",
+                "Atomes",
+                "TPSA",
+                "Anneaux"
+            ]
+        ].head(10).to_string(index=False)
+    )
 
-print("\n===================================")
-print("SENTOX-QSAR : CALCUL TERMINE")
-print("===================================")
+    print("\n===================================")
+    print("SENTOX-QSAR : CALCUL TERMINE")
+    print("===================================")
+
+
 # =========================================================
 # SENTOX-QSAR : PREDICTION LD50
 # =========================================================
+
+if __name__ == "__main__":
+    calculer_descripteurs_sur_base()
+
 
 def predire_ld50_qsar(smiles):
     """
