@@ -296,12 +296,9 @@ def main():
     # Sous-base propre
     # --------------------------------------------------------
 
-    colonnes = ["SMILES"] + variables + ["LD50_mg_kg"]
+    colonnes = variables + ["LD50_mg_kg"]
 
-    data = df[colonnes].dropna().copy()
-
-    # Une même structure SMILES ne doit pas compter comme plusieurs observations QSAR
-    data = data.drop_duplicates(subset=["SMILES"] if "SMILES" in data.columns else None)
+    data = df[colonnes].dropna()
 
     print()
     print(
