@@ -8,7 +8,16 @@ def analyser_cid_integre(cid):
     fiche = analyser_cid(cid)
 
     if fiche["statut"] != "TROUVE":
-        return fiche
+        return {
+            "statut": "NON_TROUVE",
+            "CID": cid,
+            "molecule": None,
+            "toxicologie_documentee": [],
+            "prediction_qsar": {
+                "statut": "NON_LANCE",
+                "raison": "Molecule absente de la base structurelle"
+            }
+        }
 
     molecule = fiche["molecule"]
     smiles = molecule.get("SMILES_PubChem")
