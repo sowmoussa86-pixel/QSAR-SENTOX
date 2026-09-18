@@ -29,13 +29,11 @@ IMPORTANT
 import os
 from pathlib import Path
 import pandas as pd
-import joblib
-from rdkit import Chem
 import unicodedata
 import re
 import math
 import json
-from qsar.qsar_engine import calculer_descripteurs
+
 
 # =========================================================
 # 1. CONFIGURATION
@@ -1247,93 +1245,6 @@ def creer_analyse_element(
 
 
 # =========================================================
-# 17 BIS. ANALYSE DES CONSTITUANTS
-# =========================================================
-
-def analyser_constituants(resultats_base):
-    """
-    Extrait les constituants associés à un élément
-    à partir de tous les résultats de la base SENTOX.
-    """
-
-    constituants = []
-
-    if not resultats_base:
-        return constituants
-
-    for donnees in resultats_base:
-
-        constituant, _ = extraire_valeur(
-            donnees,
-            [
-                "constituant",
-                "nom constituant",
-                "compound",
-                "molecule",
-                "molécule"
-            ]
-        )
-
-        if not constituant:
-            continue
-
-        classe, _ = extraire_valeur(
-            donnees,
-            [
-                "classe chimique",
-                "classe",
-                "chemical class"
-            ]
-        )
-
-        partie, _ = extraire_valeur(
-            donnees,
-            [
-                "partie utilisée",
-                "partie",
-                "part used"
-            ]
-        )
-
-        cid, _ = extraire_valeur(
-            donnees,
-            [
-                "cid",
-                "pubchem cid",
-                "pubchem_cid"
-            ]
-        )
-
-        formule, _ = extraire_valeur(
-            donnees,
-            [
-                "formule",
-                "formula",
-                "molecularformula"
-            ]
-        )
-
-        smiles, _ = extraire_valeur(
-            donnees,
-            [
-                "smiles",
-                "connectivitysmiles"
-            ]
-        )
-
-        constituants.append({
-            "nom": constituant,
-            "classe_chimique": classe,
-            "partie_utilisee": partie,
-            "CID": cid,
-            "formule": formule,
-            "SMILES": smiles
-        })
-
-    return constituants
-
-
-# =========================================================
 # 18. ANALYSE INDIVIDUELLE
 # =========================================================
 
@@ -1367,15 +1278,7 @@ def analyser_element(
         "resultats_base",
         []
     )
-    # -----------------------------------------------------
-    # CONSTITUANTS
-    # -----------------------------------------------------
 
-    analyse[
-        "constituants"
-    ] = analyser_constituants(
-        resultats_base
-    )
     # -----------------------------------------------------
     # PHARMACOLOGIE
     # -----------------------------------------------------
@@ -1992,95 +1895,4 @@ def rechercher_molecule_multibase(nom_recherche):
             )
 
     return None
-# =========================================================
-# SENTOX-QSAR : PREDICTION LD50
-# =========================================================
 
-def predire_ld50_qsar(smiles):
-    """
-    Prédit la LD50 orale à partir d'un SMILES.
-
-    IMPORTANT :
-    Cette fonction utilise le modèle QSAR expérimental
-    actuellement disponible dans SENTOX.
-    La prédiction ne constitue pas une preuve expérimentale
-    ni une donnée toxicologique réglementaire.
-    """
-
-    if not smiles:
-        return {
-            "statut": "non disponible",
-            "raison": "SMILES absent"
-        }
-
-    # Calcul des descripteurs RDKit
-    descripteurs = calculer_descripteurs(smiles)
-
-    if any(
-        descripteurs.get(c) is None
-        for c in [
-            "Masse_molaire",
-            "LogP",
-            "HBD",
-            "HBA",
-            "Atomes",
-            "TPSA",
-            "Anneaux"
-        ]
-    ):
-        return {
-            "statut": "non disponible",
-            "raison": "SMILES invalide ou descripteurs impossibles à calculer"
-        }
-
-    # Chargement du modèle
-    modele_path = BASE_DIR / "models" / "qsar_model.joblib"
-
-    if not modele_path.exists():
-        return {
-            "statut": "non disponible",
-            "raison": "Modèle QSAR introuvable"
-        }
-
-    modele_data = joblib.load(modele_path)
-
-    modele = modele_data["model"]
-    features = modele_data["features"]
-
-    # Construction du vecteur de prédiction
-    X = pd.DataFrame(
-        [[descripteurs[f] for f in features]],
-        columns=features
-    )
-
-    # Prédiction
-    prediction_log = float(
-        modele.predict(X)[0]
-    )
-
-    prediction_ld50 = float(
-        10 ** prediction_log
-    )
-
-    return {
-        "statut": "PRÉDIT",
-        "valeur": round(prediction_ld50, 3),
-        "unite": "mg/kg",
-        "log10_LD50": round(prediction_log, 4),
-        "modele": "RandomForestRegressor",
-        "cible": modele_data.get(
-            "target",
-            "log10_LD50_mg_kg"
-        ),
-        "n_training": modele_data.get(
-            "n_training",
-            None
-        ),
-        "descripteurs": descripteurs,
-        "commentaire": (
-            "Prédiction QSAR expérimentale/prototype. "
-            "Ne constitue pas une preuve toxicologique "
-            "expérimentale ou réglementaire."
-        )
-    }
-        

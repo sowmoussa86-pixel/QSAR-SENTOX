@@ -1,277 +1,183 @@
-import os
+import joblib
 import pandas as pd
-
 from rdkit import Chem
-from rdkit.Chem import (
-    Descriptors,
-    Crippen,
-    Lipinski,
-    rdMolDescriptors
-)
+from rdkit.Chem import Descriptors, Crippen, Lipinski, rdMolDescriptors
 
+# ==============================
+# SENTOX-QSAR : moteur de base
+# ==============================
 
-# =========================================================
-# SENTOX-QSAR
-# MOTEUR DE CALCUL DES DESCRIPTEURS MOLÉCULAIRES
-# =========================================================
+from pathlib import Path
 
-BASE_DIR = os.path.dirname(
-    os.path.dirname(
-        os.path.abspath(__file__)
-    )
-)
+BASE_DIR = Path(__file__).resolve().parent.parent
+INPUT_FILE = BASE_DIR / "data" / "molecules.csv"
+OUTPUT_FILE = BASE_DIR / "data" / "descripteurs_qsar.csv"
 
-DATA_DIR = os.path.join(
-    BASE_DIR,
-    "data"
-)
-
-INPUT_FILE = os.path.join(
-    DATA_DIR,
-    "molecules.csv"
-)
-
-OUTPUT_FILE = os.path.join(
-    DATA_DIR,
-    "descripteurs_qsar.csv"
-)
-
-
-# =========================================================
-# CALCUL DES DESCRIPTEURS
-# =========================================================
 
 def calculer_descripteurs(smiles):
+    mol = Chem.MolFromSmiles(smiles)
+
+    if mol is None:
+        return {
+            "Masse_molaire": None,
+            "LogP": None,
+            "HBD": None,
+            "HBA": None,
+            "Atomes": None,
+            "TPSA": None,
+            "Anneaux": None
+        }
+
+    return {
+        "Masse_molaire": round(Descriptors.MolWt(mol), 3),
+        "LogP": round(Crippen.MolLogP(mol), 3),
+        "HBD": Lipinski.NumHDonors(mol),
+        "HBA": Lipinski.NumHAcceptors(mol),
+        "Atomes": mol.GetNumAtoms(),
+        "TPSA": round(rdMolDescriptors.CalcTPSA(mol), 3),
+        "Anneaux": rdMolDescriptors.CalcNumRings(mol)
+    }
+
+
+# Lecture de la base
+df = pd.read_csv(INPUT_FILE)
+
+print("\n===================================")
+print("        SENTOX-QSAR")
+print("===================================")
+print(f"Nombre de molécules : {len(df)}")
+
+# Calcul des descripteurs
+resultats = df["SMILES"].apply(calculer_descripteurs)
+
+descripteurs = pd.DataFrame(resultats.tolist())
+
+# Remplacement des anciennes valeurs par les calculs RDKit
+for colonne in descripteurs.columns:
+    df[colonne] = descripteurs[colonne]
+
+# Sauvegarde
+df.to_csv(OUTPUT_FILE, index=False)
+
+print("\nDescripteurs calculés avec RDKit.")
+print(f"Fichier créé : {OUTPUT_FILE}")
+
+print("\nAperçu :")
+print(
+    df[
+        [
+            "ID",
+            "Nom",
+            "SMILES",
+            "Masse_molaire",
+            "LogP",
+            "HBD",
+            "HBA",
+            "Atomes",
+            "TPSA",
+            "Anneaux"
+        ]
+    ].head(10).to_string(index=False)
+)
+
+print("\n===================================")
+print("SENTOX-QSAR : CALCUL TERMINE")
+print("===================================")
+# =========================================================
+# SENTOX-QSAR : PREDICTION LD50
+# =========================================================
+
+def predire_ld50_qsar(smiles):
+    """
+    Prédit la LD50 à partir d'un SMILES.
+
+    IMPORTANT :
+    Cette prédiction utilise le modèle QSAR prototype
+    actuellement disponible dans SENTOX.
+    Elle ne constitue pas une preuve expérimentale
+    ni une donnée toxicologique réglementaire.
+    """
 
     if not smiles:
         return {
-            "Masse_molaire": None,
-            "LogP": None,
-            "HBD": None,
-            "HBA": None,
-            "Atomes": None,
-            "TPSA": None,
-            "Anneaux": None,
-            "Bonds": None,
-            "Fraction_CSP3": None
+            "statut": "non disponible",
+            "raison": "SMILES absent"
         }
 
-    try:
+    # Calcul des descripteurs RDKit
+    descripteurs = calculer_descripteurs(smiles)
 
-        mol = Chem.MolFromSmiles(
-            str(smiles)
-        )
+    champs = [
+        "Masse_molaire",
+        "LogP",
+        "HBD",
+        "HBA",
+        "Atomes",
+        "TPSA",
+        "Anneaux"
+    ]
 
-    except Exception:
-
-        mol = None
-
-    if mol is None:
-
+    if any(descripteurs.get(c) is None for c in champs):
         return {
-            "Masse_molaire": None,
-            "LogP": None,
-            "HBD": None,
-            "HBA": None,
-            "Atomes": None,
-            "TPSA": None,
-            "Anneaux": None,
-            "Bonds": None,
-            "Fraction_CSP3": None
+            "statut": "non disponible",
+            "raison": "Impossible de calculer les descripteurs RDKit"
         }
 
-    return {
+    # Chemin du modèle
+    modele_path = BASE_DIR / "models" / "qsar_model.joblib"
 
-        "Masse_molaire":
-            round(
-                Descriptors.MolWt(mol),
-                3
-            ),
+    if not modele_path.exists():
+        return {
+            "statut": "non disponible",
+            "raison": "Modèle QSAR introuvable"
+        }
 
-        "LogP":
-            round(
-                Crippen.MolLogP(mol),
-                3
-            ),
+    # Chargement du modèle
+    modele_data = joblib.load(modele_path)
 
-        "HBD":
-            Lipinski.NumHDonors(mol),
+    modele = modele_data["model"]
+    features = modele_data["features"]
 
-        "HBA":
-            Lipinski.NumHAcceptors(mol),
+    # Vérification des variables attendues
+    if not all(f in descripteurs for f in features):
+        return {
+            "statut": "non disponible",
+            "raison": "Descripteurs requis par le modèle absents"
+        }
 
-        "Atomes":
-            mol.GetNumAtoms(),
+    # Préparation des données
+    X = pd.DataFrame(
+        [[descripteurs[f] for f in features]],
+        columns=features
+    )
 
-        "TPSA":
-            round(
-                rdMolDescriptors.CalcTPSA(mol),
-                3
-            ),
+    # Prédiction
+    prediction_log = float(
+        modele.predict(X)[0]
+    )
 
-        "Anneaux":
-            rdMolDescriptors.CalcNumRings(mol),
-
-        "Bonds":
-            mol.GetNumBonds(),
-
-        "Fraction_CSP3":
-            round(
-                rdMolDescriptors.CalcFractionCSP3(mol),
-                3
-            )
-    }
-
-
-# =========================================================
-# CALCUL POUR UNE MOLÉCULE
-# =========================================================
-
-def analyser_molecule(smiles):
-
-    descripteurs = calculer_descripteurs(
-        smiles
+    prediction_ld50 = float(
+        10 ** prediction_log
     )
 
     return {
-
-        "smiles": smiles,
-
+        "statut": "PRÉDIT",
+        "valeur": round(prediction_ld50, 3),
+        "unite": "mg/kg",
+        "log10_LD50": round(prediction_log, 4),
+        "modele": type(modele).__name__,
+        "cible": modele_data.get(
+            "target",
+            "log10_LD50_mg_kg"
+        ),
+        "n_training": modele_data.get(
+            "n_training"
+        ),
         "descripteurs": descripteurs,
-
-        "statut":
-            "calculé"
-            if any(
-                valeur is not None
-                for valeur in descripteurs.values()
-            )
-            else "non disponible"
+        "commentaire": (
+            "Prédiction QSAR prototype. "
+            "Ne constitue pas une preuve expérimentale "
+            "ou réglementaire."
+        )
     }
 
-
-# =========================================================
-# CALCUL POUR UNE BASE DE MOLECULES
-# =========================================================
-
-def calculer_base_qsar(
-    input_file=INPUT_FILE,
-    output_file=OUTPUT_FILE
-):
-
-    if not os.path.exists(input_file):
-
-        return {
-            "statut": "erreur",
-            "message":
-                f"Fichier introuvable : {input_file}"
-        }
-
-    try:
-
-        df = pd.read_csv(
-            input_file
-        )
-
-    except Exception as e:
-
-        return {
-            "statut": "erreur",
-            "message":
-                f"Impossible de lire la base : {e}"
-        }
-
-    if "SMILES" not in df.columns:
-
-        return {
-            "statut": "erreur",
-            "message":
-                "La colonne SMILES est absente."
-        }
-
-    resultats = []
-
-    for smiles in df["SMILES"]:
-
-        resultats.append(
-            calculer_descripteurs(
-                smiles
-            )
-        )
-
-    descripteurs = pd.DataFrame(
-        resultats
-    )
-
-    for colonne in descripteurs.columns:
-
-        df[colonne] = (
-            descripteurs[colonne]
-        )
-
-    try:
-
-        df.to_csv(
-            output_file,
-            index=False
-        )
-
-    except Exception as e:
-
-        return {
-            "statut": "erreur",
-            "message":
-                f"Impossible de sauvegarder : {e}"
-        }
-
-    return {
-
-        "statut": "calculé",
-
-        "nombre_molecules":
-            len(df),
-
-        "fichier":
-            output_file,
-
-        "descripteurs":
-            list(
-                descripteurs.columns
-            )
-    }
-
-
-# =========================================================
-# TEST DIRECT
-# =========================================================
-
-if __name__ == "__main__":
-
-    resultat = calculer_base_qsar()
-
-    print("")
-    print("===================================")
-    print("        SENTOX-QSAR")
-    print("===================================")
-
-    print(
-        f"Statut : {resultat.get('statut')}"
-    )
-
-    if resultat.get("nombre_molecules"):
-
-        print(
-            "Nombre de molécules : "
-            f"{resultat['nombre_molecules']}"
-        )
-
-    print(
-        "Fichier : "
-        f"{resultat.get('fichier', '')}"
-    )
-
-    print(
-        "Descripteurs : "
-        f"{resultat.get('descripteurs', [])}"
-    )
-
-    print("===================================")
