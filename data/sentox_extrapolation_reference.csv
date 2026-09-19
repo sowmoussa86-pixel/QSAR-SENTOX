@@ -1,0 +1,8 @@
+Parametre,Espece,Valeur,Unite,Contexte,Source,Reference,Statut
+Km,rat,6,adimensionnel,HED,FDA,Estimating the Maximum Safe Starting Dose in Initial Clinical Trials for Therapeutics in Adult Healthy Volunteers,Documentée
+Km,humain_adulte,37,adimensionnel,HED,FDA,Estimating the Maximum Safe Starting Dose in Initial Clinical Trials for Therapeutics in Adult Healthy Volunteers,Documentée
+Km,souris,3,adimensionnel,HED,FDA,Guidance for Industry - Estimating the Maximum Safe Starting Dose,Documentée
+Km,hamster,5,adimensionnel,HED,FDA,Guidance for Industry - Estimating the Maximum Safe Starting Dose,Documentée
+Km,lapin,12,adimensionnel,HED,FDA,Guidance for Industry - Estimating the Maximum Safe Starting Dose,Documentée
+Km,chien,20,adimensionnel,HED,FDA,Guidance for Industry - Estimating the Maximum Safe Starting Dose,Documentée
+Facteur_securite,humain_adulte,10,adimensionnel,MRSD_initiale,FDA,Estimating the Maximum Safe Starting Dose in Initial Clinical Trials for Therapeutics in Adult Healthy Volunteers,Documentée
