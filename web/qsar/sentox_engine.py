@@ -190,15 +190,46 @@ def rechercher_element(
     type_element="auto"
 ):
     """
-    Recherche un élément dans la base SENTOX.
+    Recherche un élément dans les bases SENTOX.
 
-    La recherche est effectuée dans toutes les colonnes.
+    Les molécules et médicaments sont recherchés en priorité
+    dans les bases moléculaires SENTOX.
+
+    Les autres éléments continuent d'utiliser la base
+    constituants_enrichis.csv.
     """
 
-    nom = str(nom).strip().lower()
+    nom_original = str(nom).strip()
 
-    if not nom:
+    if not nom_original:
         return []
+
+    type_normalise = str(type_element).strip().lower()
+
+    # =====================================================
+    # RECHERCHE MOLECULAIRE
+    # =====================================================
+
+    if type_normalise in (
+        "auto",
+        "molecule",
+        "molécule",
+        "medicament",
+        "médicament"
+    ):
+
+        resultat_molecule = rechercher_molecule_multibase(
+            nom_original
+        )
+
+        if resultat_molecule:
+            return [resultat_molecule]
+
+    # =====================================================
+    # RECHERCHE CLASSIQUE
+    # =====================================================
+
+    nom_normalise = nom_original.lower()
 
     base = charger_base()
 
@@ -211,7 +242,7 @@ def rechercher_element(
             for v in ligne.values()
         )
 
-        if nom in texte:
+        if nom_normalise in texte:
 
             resultats.append(ligne)
 
@@ -433,20 +464,19 @@ def extraire_structure(
 ):
     """
     Recherche formule brute, masse molaire, SMILES et InChI.
+
+    Priorité :
+    1. utiliser les données documentées dans la base ;
+    2. si elles sont absentes ou invalides, les calculer avec RDKit
+       à partir du SMILES.
     """
 
     structure = {
-
         "formule_brute": None,
-
         "masse_molaire": None,
-
         "smiles": None,
-
         "inchi": None,
-
         "structure_2d": None,
-
         "structure_3d": None
     }
 
@@ -454,6 +484,10 @@ def extraire_structure(
         return structure
 
     donnees = resultats_base[0]
+
+    # ---------------------------------------------------------
+    # DONNÉES DOCUMENTÉES
+    # ---------------------------------------------------------
 
     formule, _ = extraire_valeur(
         donnees,
@@ -488,126 +522,208 @@ def extraire_structure(
         ]
     )
 
-    if formule:
-        structure["formule_brute"] = formule
+    # ---------------------------------------------------------
+    # FORMULE
+    # ---------------------------------------------------------
 
-    if masse:
+    if formule:
+        formule_str = str(formule).strip()
+
+        if formule_str.lower() not in (
+            "nan",
+            "none",
+            "null",
+            ""
+        ):
+            structure["formule_brute"] = formule_str
+
+    # ---------------------------------------------------------
+    # MASSE MOLAIRE
+    # ---------------------------------------------------------
+
+    if masse is not None:
         try:
-            structure["masse_molaire"] = float(
+            valeur_masse = float(
                 str(masse).replace(",", ".")
             )
+
+            if valeur_masse == valeur_masse:
+                structure["masse_molaire"] = valeur_masse
+
         except Exception:
-            structure["masse_molaire"] = None
+            pass
+
+    # ---------------------------------------------------------
+    # SMILES
+    # ---------------------------------------------------------
 
     if smiles:
-        structure["smiles"] = smiles
+        smiles_str = str(smiles).strip()
+
+        if smiles_str.lower() not in (
+            "nan",
+            "none",
+            "null",
+            ""
+        ):
+            structure["smiles"] = smiles_str
+
+    # ---------------------------------------------------------
+    # INCHI DOCUMENTÉ
+    # ---------------------------------------------------------
 
     if inchi:
-        structure["inchi"] = inchi
+        inchi_str = str(inchi).strip()
 
-    # Si la masse n'est pas documentée,
-    # SENTOX tente un calcul à partir de la formule.
+        if inchi_str.lower() not in (
+            "nan",
+            "none",
+            "null",
+            ""
+        ):
+            structure["inchi"] = inchi_str
+
+    # =========================================================
+    # COMPLÉTION AUTOMATIQUE PAR RDKit
+    # =========================================================
+
+    if structure["smiles"]:
+
+        try:
+            from rdkit import Chem
+            from rdkit.Chem import Descriptors
+            from rdkit.Chem import rdMolDescriptors
+
+            mol = Chem.MolFromSmiles(
+                structure["smiles"]
+            )
+
+            if mol is not None:
+
+                # -------------------------------------------------
+                # FORMULE BRUTE
+                # -------------------------------------------------
+
+                if not structure["formule_brute"]:
+                    try:
+                        structure["formule_brute"] = (
+                            rdMolDescriptors.CalcMolFormula(mol)
+                        )
+
+                        structure[
+                            "formule_brute_statut"
+                        ] = "calculé — RDKit"
+
+                    except Exception:
+                        pass
+
+                # -------------------------------------------------
+                # MASSE MOLÉCULAIRE
+                # -------------------------------------------------
+
+                if structure["masse_molaire"] is None:
+                    try:
+                        structure["masse_molaire"] = round(
+                            Descriptors.MolWt(mol),
+                            4
+                        )
+
+                        structure[
+                            "masse_molaire_statut"
+                        ] = "calculé — RDKit"
+
+                    except Exception:
+                        pass
+
+                # -------------------------------------------------
+                # INCHI
+                # -------------------------------------------------
+
+                if not structure["inchi"]:
+                    try:
+                        inchi_calcule = Chem.MolToInchi(mol)
+
+                        if inchi_calcule:
+                            structure["inchi"] = inchi_calcule
+
+                            structure[
+                                "inchi_statut"
+                            ] = "calculé — RDKit"
+
+                    except Exception:
+                        pass
+
+                # -------------------------------------------------
+                # SMILES CANONIQUE
+                # -------------------------------------------------
+
+                try:
+                    structure[
+                        "smiles_canonique"
+                    ] = Chem.MolToSmiles(mol)
+
+                except Exception:
+                    pass
+
+                # -------------------------------------------------
+                # VALIDATION
+                # -------------------------------------------------
+
+                structure[
+                    "structure_smiles_statut"
+                ] = "valide — RDKit"
+
+            else:
+                structure[
+                    "structure_smiles_statut"
+                ] = "SMILES invalide"
+
+        except Exception as e:
+
+            structure[
+                "rdkit_erreur"
+            ] = str(e)
+
+    # ---------------------------------------------------------
+    # FALLBACK ANCIEN : CALCUL À PARTIR DE LA FORMULE
+    # ---------------------------------------------------------
 
     if (
         structure["masse_molaire"] is None
         and structure["formule_brute"]
     ):
 
-        structure["masse_molaire"] = (
-            calculer_masse_molaire(
+        try:
+            masse_calculee = calculer_masse_molaire(
                 structure["formule_brute"]
             )
-        )
 
-        if structure["masse_molaire"]:
+            if masse_calculee:
+                structure["masse_molaire"] = masse_calculee
 
-            structure[
-                "masse_molaire_statut"
-            ] = "calculé"
+                structure[
+                    "masse_molaire_statut"
+                ] = "calculé — formule"
+
+        except Exception:
+            pass
 
     return structure
-
-
-# =========================================================
-# 9. STRUCTURE 2D
-# =========================================================
-
-def analyser_structure_2d(
-    smiles
-):
+def analyser_structure_2d(smiles):
     """
-    Prépare la visualisation 2D.
-
-    Le rendu graphique pourra être connecté à RDKit
-    lorsque la bibliothèque sera disponible.
+    Génération de la structure 2D avec RDKit.
     """
-
-    if not smiles:
-
-        return {
-            "statut": "non disponible",
-            "smiles": None,
-            "message":
-                "SMILES non disponible"
-        }
-
-    return {
-
-        "statut": "disponible",
-
-        "smiles": smiles,
-
-        "mode":
-            "structure moléculaire 2D",
-
-        "moteur":
-            "RDKit recommandé pour le rendu graphique"
-    }
+    from web.qsar.structure_engine import generer_structure_2d
+    return generer_structure_2d(smiles)
 
 
-# =========================================================
-# 10. STRUCTURE 3D
-# =========================================================
-
-def analyser_structure_3d(
-    smiles
-):
+def analyser_structure_3d(smiles):
     """
-    Prépare la structure 3D.
-
-    Une vraie géométrie 3D nécessite un moteur
-    de chimio-informatique.
+    Génération de la structure 3D avec RDKit.
     """
+    from web.qsar.structure_engine import generer_structure_3d
+    return generer_structure_3d(smiles)
 
-    if not smiles:
-
-        return {
-
-            "statut": "non disponible",
-
-            "smiles": None,
-
-            "message":
-                "SMILES non disponible"
-        }
-
-    return {
-
-        "statut": "à générer",
-
-        "smiles": smiles,
-
-        "mode":
-            "structure moléculaire 3D",
-
-        "moteur":
-            "RDKit / moteur 3D"
-    }
-
-
-# =========================================================
-# 11. DESCRIPTEURS MOLÉCULAIRES SIMPLES
-# =========================================================
 
 def calculer_descripteurs_simples(
     formule
@@ -885,7 +1001,12 @@ def analyser_toxicologie(
         donnees,
         [
             "dl50",
-            "ld50"
+            "ld50",
+            "ld50_mg_kg",
+            "ld50 mg kg",
+            "ld50 (mg/kg)",
+            "dl50_mg_kg",
+            "dl50 mg kg"
         ]
     )
 
@@ -916,7 +1037,19 @@ def analyser_toxicologie(
             source_dl50
         )
 
-    if toxicite:
+    # NaN / valeurs vides = donnée non disponible
+    toxicite_valide = False
+
+    if toxicite is not None:
+        try:
+            toxicite_valide = (
+                str(toxicite).strip().lower()
+                not in ("", "nan", "none", "null")
+            )
+        except Exception:
+            toxicite_valide = False
+
+    if toxicite_valide:
 
         toxicologie[
             "toxicite_aigue"
@@ -945,10 +1078,20 @@ def analyser_toxicologie(
 # =========================================================
 
 def analyser_adme(
-    resultats_base
+    resultats_base,
+    smiles=None
 ):
     """
-    Recherche les paramètres ADME disponibles.
+    Analyse ADME.
+
+    Priorité :
+    1. données ADME documentées dans la base ;
+    2. profil ADME structurel calculé par RDKit si un SMILES
+       est disponible.
+
+    Les résultats RDKit sont des indicateurs structurels.
+    Ils ne constituent pas des données pharmacocinétiques
+    expérimentales.
     """
 
     adme = {
@@ -966,45 +1109,108 @@ def analyser_adme(
             resultat_sentox()
     }
 
-    if not resultats_base:
-        return adme
+    # ========================================================
+    # 1. RECHERCHE DES DONNÉES ADME DOCUMENTÉES
+    # ========================================================
 
-    donnees = resultats_base[0]
+    if resultats_base:
 
-    correspondances = {
+        donnees = resultats_base[0]
 
-        "absorption": [
-            "absorption"
-        ],
+        correspondances = {
 
-        "distribution": [
-            "distribution"
-        ],
+            "absorption": [
+                "absorption"
+            ],
 
-        "metabolisme": [
-            "metabolisme",
-            "metabolism"
-        ],
+            "distribution": [
+                "distribution"
+            ],
 
-        "excretion": [
-            "excretion",
-            "excrétion"
-        ]
-    }
+            "metabolisme": [
+                "metabolisme",
+                "metabolism"
+            ],
 
-    for parametre, mots in correspondances.items():
+            "excretion": [
+                "excretion",
+                "excrétion"
+            ]
+        }
 
-        valeur, source = extraire_valeur(
-            donnees,
-            mots
-        )
+        for parametre, mots in correspondances.items():
 
-        if valeur:
-
-            adme[parametre] = documente(
-                valeur,
-                source
+            valeur, source = extraire_valeur(
+                donnees,
+                mots
             )
+
+            if valeur:
+
+                adme[parametre] = documente(
+                    valeur,
+                    source
+                )
+
+    # ========================================================
+    # 2. PROFIL ADME STRUCTUREL RDKit
+    # ========================================================
+
+    if smiles:
+
+        try:
+
+            from web.qsar.adme_engine import (
+                analyser_adme_structure
+            )
+
+            profil = analyser_adme_structure(
+                smiles
+            )
+
+            if profil.get(
+                "statut_global"
+            ) == "CALCULÉ — PROFIL STRUCTUREL":
+
+                for parametre in [
+                    "absorption",
+                    "distribution",
+                    "metabolisme",
+                    "excretion"
+                ]:
+
+                    # Une donnée documentée reste prioritaire.
+                    # RDKit complète uniquement les paramètres
+                    # encore indisponibles.
+
+                    if adme[parametre].get(
+                        "statut"
+                    ) == "non disponible":
+
+                        adme[parametre] = (
+                            profil[parametre]
+                        )
+
+                adme["descripteurs_support"] = (
+                    profil.get(
+                        "descripteurs_support",
+                        {}
+                    )
+                )
+
+                adme["statut_global"] = (
+                    "CALCULÉ — PROFIL STRUCTUREL"
+                )
+
+                adme["moteur"] = "RDKit"
+
+                adme["type_resultat"] = (
+                    "INDICATEUR STRUCTUREL"
+                )
+
+        except Exception as e:
+
+            adme["erreur_structurelle"] = str(e)
 
     return adme
 
@@ -1396,7 +1602,164 @@ def analyser_element(
         resultats_base
     )
 
-       # -----------------------------------------------------
+    # -----------------------------------------------------
+    # BASE TOXICOLOGIQUE V2
+    # -----------------------------------------------------
+    try:
+        from web.qsar.toxicology_database_engine import rechercher_toxicologie
+
+        nom_recherche = identification.get("nom_identifie") or nom
+
+        analyse[
+            "toxicologie_v2"
+        ] = rechercher_toxicologie(
+            nom_recherche
+        )
+
+        # -------------------------------------------------
+        # CALCUL HED CONDITIONNEL
+        # -------------------------------------------------
+        if analyse["toxicologie_v2"].get("resultats"):
+            from extrapolation.hed_engine import calculer_hed
+
+            for tox in analyse["toxicologie_v2"]["resultats"]:
+                espece = tox.get("Espece")
+                valeur = tox.get("Valeur")
+                unite = tox.get("Unite")
+
+                # HED uniquement si l'espèce et la dose
+                # sont suffisamment renseignées.
+                if (
+                    espece
+                    and str(espece).strip().lower()
+                    not in {
+                        "non précisée",
+                        "non precisee",
+                        "non précisé",
+                        "non precise",
+                        "nan",
+                        ""
+                    }
+                    and valeur is not None
+                    and str(valeur).lower() != "nan"
+                    and unite
+                    and str(unite).strip().lower() == "mg/kg"
+                ):
+                    try:
+                        resultat_hed = calculer_hed(
+                            float(valeur),
+                            str(espece).strip()
+                        )
+
+                        tox["HED"] = resultat_hed.get("HED")
+                        tox["Km_animal"] = resultat_hed.get("Km_animal")
+                        tox["Km_humain"] = resultat_hed.get("Km_humain")
+                        tox["Point_depart"] = valeur
+
+                    except Exception as hed_error:
+                        tox["HED"] = None
+                        tox["Commentaire_SENTOX"] = (
+                            str(tox.get("Commentaire_SENTOX") or "")
+                            + " HED non calculée : "
+                            + str(hed_error)
+                        )
+
+                else:
+                    tox["HED"] = None
+                    tox["Commentaire_SENTOX"] = (
+                        str(tox.get("Commentaire_SENTOX") or "")
+                        + " HED non calculée : espèce ou dose insuffisamment documentée."
+                    )
+
+                # -------------------------------------------------
+                # CALCUL MOE / RQ CONDITIONNEL
+                # -------------------------------------------------
+                from risk.risk_engine import calculer_moe
+                from risk.rq_engine import calculer_rq
+
+                exposition = tox.get("Exposition_humaine")
+                point_depart = tox.get("Point_depart")
+                valeur_reference = tox.get("Dose_reference_humaine")
+
+                def valeur_valide(valeur):
+                    if valeur is None:
+                        return False
+                    try:
+                        nombre = float(valeur)
+                        return nombre > 0
+                    except (TypeError, ValueError):
+                        return False
+
+                # MOE :
+                # point de départ / exposition humaine
+                if (
+                    valeur_valide(point_depart)
+                    and valeur_valide(exposition)
+                ):
+                    try:
+                        resultat_moe = calculer_moe(
+                            float(point_depart),
+                            float(exposition)
+                        )
+                        tox["MOE"] = resultat_moe.get("MOE")
+                        tox["Statut_MOE"] = "Calculée"
+                    except Exception as moe_error:
+                        tox["MOE"] = None
+                        tox["Statut_MOE"] = "NON CALCULÉE"
+                        tox["Commentaire_SENTOX"] = (
+                            str(tox.get("Commentaire_SENTOX") or "")
+                            + " MOE non calculée : "
+                            + str(moe_error)
+                        )
+                else:
+                    tox["MOE"] = None
+                    tox["Statut_MOE"] = "NON CALCULÉE"
+
+                # RQ :
+                # exposition humaine / valeur de référence
+                if (
+                    valeur_valide(exposition)
+                    and valeur_valide(valeur_reference)
+                ):
+                    try:
+                        resultat_rq = calculer_rq(
+                            float(exposition),
+                            float(valeur_reference)
+                        )
+                        tox["RQ"] = resultat_rq.get("RQ")
+                        tox["Statut_RQ"] = "Calculée"
+                    except Exception as rq_error:
+                        tox["RQ"] = None
+                        tox["Statut_RQ"] = "NON CALCULÉ"
+                        tox["Commentaire_SENTOX"] = (
+                            str(tox.get("Commentaire_SENTOX") or "")
+                            + " RQ non calculé : "
+                            + str(rq_error)
+                        )
+                else:
+                    tox["RQ"] = None
+                    tox["Statut_RQ"] = "NON CALCULÉ"
+
+    except Exception as e:
+        analyse[
+            "toxicologie_v2"
+        ] = {
+            "statut": "ERREUR",
+            "resultats": [],
+            "erreur": str(e)
+        }
+
+    # -----------------------------------------------------
+    # ADME
+    # -----------------------------------------------------
+
+    analyse[
+        "adme"
+    ] = analyser_adme(
+        resultats_base
+    )
+
+    # -----------------------------------------------------
     # STRUCTURE MOLÉCULAIRE
     # -----------------------------------------------------
 
@@ -1410,18 +1773,6 @@ def analyser_element(
         structure
     )
 
-    # -----------------------------------------------------
-    # ADME
-    # -----------------------------------------------------
-    # Le SMILES extrait de la structure est transmis
-    # au moteur ADME structurel RDKit.
-
-    analyse[
-        "adme"
-    ] = analyser_adme(
-        resultats_base,
-        structure.get("smiles")
-    )
     # -----------------------------------------------------
     # STRUCTURE 2D
     # -----------------------------------------------------
@@ -1450,15 +1801,65 @@ def analyser_element(
     # DESCRIPTEURS
     # -----------------------------------------------------
 
-    analyse[
-        "molecule"
-    ][
-        "descripteurs"
-    ] = calculer_descripteurs_simples(
-        structure.get(
-            "formule_brute"
-        )
-    )
+    # -----------------------------------------------------
+    # DESCRIPTEURS QSAR — RDKit
+    # -----------------------------------------------------
+
+    smiles = structure.get("smiles")
+
+    if smiles:
+        from web.qsar.descriptors_engine import calculer_descripteurs_rdkit
+
+        analyse[
+            "molecule"
+        ][
+            "descripteurs"
+        ] = calculer_descripteurs_rdkit(smiles)
+
+    else:
+        analyse[
+            "molecule"
+        ][
+            "descripteurs"
+        ] = {
+            "statut": "NON DISPONIBLE",
+            "message": "SMILES absent"
+        }
+
+    # -----------------------------------------------------
+    # SIMILARITÉ MOLÉCULAIRE
+    # -----------------------------------------------------
+
+    try:
+        if smiles:
+            from web.qsar.similarity_engine import (
+                evaluer_domaine_applicabilite
+            )
+
+            analyse["molecule"]["similarite"] = (
+                evaluer_domaine_applicabilite(
+                    smiles,
+                    chemin_base=os.path.join(
+                        DATA_DIR,
+                        "molecules.csv"
+                    ),
+                    top_n=5
+                )
+            )
+
+        else:
+            analyse["molecule"]["similarite"] = {
+                "statut": "NON DISPONIBLE",
+                "message": "SMILES absent",
+                "voisins": []
+            }
+
+    except Exception as e:
+        analyse["molecule"]["similarite"] = {
+            "statut": "ERREUR",
+            "message": str(e),
+            "voisins": []
+        }
 
     # -----------------------------------------------------
     # SCORE DE RISQUE
@@ -1916,12 +2317,19 @@ FICHIERS_BASES_SENTOX = [
 
 
 def rechercher_molecule_multibase(nom_recherche):
-    """Recherche une molécule dans toutes les bases SENTOX."""
+    """Recherche une molécule dans toutes les bases SENTOX.
+
+    La fonction parcourt toutes les bases et conserve la fiche
+    contenant le plus d'informations utiles.
+    """
 
     recherche = normaliser_recherche(nom_recherche)
 
     if not recherche:
         return None
+
+    meilleur_resultat = None
+    meilleur_score = -1
 
     for fichier in FICHIERS_BASES_SENTOX:
 
@@ -1946,6 +2354,9 @@ def rechercher_molecule_multibase(nom_recherche):
                 if c in df.columns
             ]
 
+            if not colonnes:
+                continue
+
             # Recherche exacte
             for colonne in colonnes:
 
@@ -1960,40 +2371,78 @@ def rechercher_molecule_multibase(nom_recherche):
 
                 if masque.any():
 
-                    ligne = df.loc[masque].iloc[0].to_dict()
-                    ligne["_source_sentox"] = Path(fichier).name
+                    for _, ligne_df in df.loc[masque].iterrows():
 
-                    return ligne
+                        ligne = ligne_df.to_dict()
 
-            # Recherche partielle
-            for colonne in colonnes:
+                        score = sum(
+                            1
+                            for valeur in ligne.values()
+                            if pd.notna(valeur)
+                            and str(valeur).strip()
+                            and str(valeur).strip().lower() != "nan"
+                        )
 
-                valeurs = (
-                    df[colonne]
-                    .fillna("")
-                    .astype(str)
-                    .map(normaliser_recherche)
-                )
+                        if score > meilleur_score:
 
-                masque = valeurs.str.contains(
-                    recherche,
-                    regex=False,
-                    na=False
-                )
+                            ligne["_source_sentox"] = Path(
+                                fichier
+                            ).name
 
-                if masque.any():
+                            meilleur_resultat = ligne
+                            meilleur_score = score
 
-                    ligne = df.loc[masque].iloc[0].to_dict()
-                    ligne["_source_sentox"] = Path(fichier).name
+            # Recherche partielle uniquement si aucune
+            # correspondance exacte n'a encore été trouvée
+            if meilleur_resultat is None:
 
-                    return ligne
+                for colonne in colonnes:
+
+                    valeurs = (
+                        df[colonne]
+                        .fillna("")
+                        .astype(str)
+                        .map(normaliser_recherche)
+                    )
+
+                    masque = valeurs.str.contains(
+                        recherche,
+                        regex=False,
+                        na=False
+                    )
+
+                    if masque.any():
+
+                        for _, ligne_df in df.loc[masque].iterrows():
+
+                            ligne = ligne_df.to_dict()
+
+                            score = sum(
+                                1
+                                for valeur in ligne.values()
+                                if pd.notna(valeur)
+                                and str(valeur).strip()
+                                and str(valeur).strip().lower() != "nan"
+                            )
+
+                            if score > meilleur_score:
+
+                                ligne["_source_sentox"] = Path(
+                                    fichier
+                                ).name
+
+                                meilleur_resultat = ligne
+                                meilleur_score = score
 
         except Exception as e:
+
             print(
                 f"[SENTOX] Erreur lecture {fichier}: {e}"
             )
 
-    return None
+    return meilleur_resultat
+
+
 # =========================================================
 # SENTOX-QSAR : PREDICTION LD50
 # =========================================================

@@ -222,6 +222,44 @@ def analyse():
         "auto"
     ).strip()
 
+    # -----------------------------------------------------
+    # DONNÉES D'EXPOSITION HUMAINE — OPTIONNELLES
+    # -----------------------------------------------------
+
+    exposition_humaine = request.form.get(
+        "exposition_humaine",
+        ""
+    ).strip()
+
+    valeur_reference = request.form.get(
+        "valeur_reference",
+        ""
+    ).strip()
+
+    point_depart = request.form.get(
+        "point_depart",
+        ""
+    ).strip()
+
+    # -----------------------------------------------------
+    # DONNÉES HED — OPTIONNELLES
+    # -----------------------------------------------------
+
+    dose_animale = request.form.get(
+        "dose_animale",
+        ""
+    ).strip()
+
+    espece = request.form.get(
+        "espece",
+        ""
+    ).strip()
+
+    contexte = request.form.get(
+        "contexte",
+        "MRSD_initiale"
+    ).strip()
+
     if not element:
 
         return (
@@ -239,6 +277,150 @@ def analyse():
 
         type_element
     )
+
+    # -----------------------------------------------------
+    # EXTRAPOLATION HED — DOSE DE REFERENCE
+    # -----------------------------------------------------
+    try:
+        from extrapolation.hed_engine import calculer_dose_reference
+
+        def valeur_positive_hed(valeur):
+            if valeur is None or not str(valeur).strip():
+                return None
+
+            try:
+                nombre = float(valeur)
+
+                if nombre <= 0:
+                    return None
+
+                return nombre
+
+            except (TypeError, ValueError):
+                return None
+
+        dose_val = valeur_positive_hed(dose_animale)
+
+        evaluation_hed = {
+            "dose_animale": dose_val,
+            "espece": espece or None,
+            "contexte": contexte or "MRSD_initiale",
+            "HED": None,
+            "Km_animal": None,
+            "Km_humain": None,
+            "facteur_securite": None,
+            "dose_reference": None,
+            "statut": "NON CALCULEE"
+        }
+
+        if dose_val is not None and espece:
+
+            resultat_hed = calculer_dose_reference(
+                dose_val,
+                espece,
+                contexte or "MRSD_initiale"
+            )
+
+            evaluation_hed["HED"] = resultat_hed.get("HED")
+            evaluation_hed["Km_animal"] = resultat_hed.get("Km_animal")
+            evaluation_hed["Km_humain"] = resultat_hed.get("Km_humain")
+            evaluation_hed["facteur_securite"] = resultat_hed.get(
+                "facteur_securite"
+            )
+            evaluation_hed["dose_reference"] = resultat_hed.get(
+                "dose_reference"
+            )
+            evaluation_hed["statut"] = "CALCULEE"
+
+        resultat["evaluation_hed"] = evaluation_hed
+
+    except Exception as e:
+
+        resultat["evaluation_hed"] = {
+            "dose_animale": None,
+            "espece": espece or None,
+            "contexte": contexte or "MRSD_initiale",
+            "HED": None,
+            "Km_animal": None,
+            "Km_humain": None,
+            "facteur_securite": None,
+            "dose_reference": None,
+            "statut": "ERREUR",
+            "erreur": str(e)
+        }
+
+    # -----------------------------------------------------
+    # EVALUATION D'EXPOSITION — MOE / RQ
+    # -----------------------------------------------------
+    try:
+        from risk.risk_engine import calculer_moe
+        from risk.rq_engine import calculer_rq
+
+        def valeur_positive(valeur):
+            if valeur is None or not str(valeur).strip():
+                return None
+
+            try:
+                nombre = float(valeur)
+
+                if nombre <= 0:
+                    return None
+
+                return nombre
+
+            except (TypeError, ValueError):
+                return None
+
+        pd_val = valeur_positive(point_depart)
+        exp_val = valeur_positive(exposition_humaine)
+        ref_val = valeur_positive(valeur_reference)
+
+        evaluation = {
+            "point_depart": pd_val,
+            "exposition_humaine": exp_val,
+            "valeur_reference": ref_val,
+            "MOE": None,
+            "RQ": None,
+            "statut_MOE": "NON CALCULEE",
+            "statut_RQ": "NON CALCULE",
+        }
+
+        # MOE = point de départ / exposition humaine
+        if pd_val is not None and exp_val is not None:
+
+            resultat_moe = calculer_moe(
+                pd_val,
+                exp_val
+            )
+
+            evaluation["MOE"] = resultat_moe.get("MOE")
+            evaluation["statut_MOE"] = "CALCULEE"
+
+        # RQ = exposition humaine / valeur de référence
+        if exp_val is not None and ref_val is not None:
+
+            resultat_rq = calculer_rq(
+                exp_val,
+                ref_val
+            )
+
+            evaluation["RQ"] = resultat_rq.get("RQ")
+            evaluation["statut_RQ"] = "CALCULE"
+
+        resultat["evaluation_exposition"] = evaluation
+
+    except Exception as e:
+
+        resultat["evaluation_exposition"] = {
+            "point_depart": None,
+            "exposition_humaine": None,
+            "valeur_reference": None,
+            "MOE": None,
+            "RQ": None,
+            "statut_MOE": "ERREUR",
+            "statut_RQ": "ERREUR",
+            "erreur": str(e)
+        }
 
     # -----------------------------------------------------
     # AFFICHAGE

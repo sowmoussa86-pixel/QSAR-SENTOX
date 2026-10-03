@@ -245,6 +245,10 @@
 
     </style>
 
+
+    <!-- SENTOX — Visualiseur moléculaire 3D -->
+    <script src="{{ url_for('static', filename='js/3Dmol-min.js') }}"></script>
+
 </head>
 
 
@@ -691,6 +695,526 @@
 
 
 <!-- =====================================================
+     EXTRAPOLATION HED — SENTOX
+===================================================== -->
+
+<div class="card">
+
+    <h2>🧬 Extrapolation HED SENTOX</h2>
+
+    <p>
+        Conversion d'une dose animale en équivalent humain
+        à partir des facteurs Km documentés.
+    </p>
+
+    <form method="POST" action="/analyse">
+
+        <input
+            type="hidden"
+            name="element"
+            value="{{ element }}"
+        >
+
+        <input
+            type="hidden"
+            name="type"
+            value="{{ type_element }}"
+        >
+
+        <!-- Conserver les éventuelles données MOE/RQ -->
+        <input
+            type="hidden"
+            name="point_depart"
+            value="{{ resultat.evaluation_exposition.point_depart or '' }}"
+        >
+
+        <input
+            type="hidden"
+            name="exposition_humaine"
+            value="{{ resultat.evaluation_exposition.exposition_humaine or '' }}"
+        >
+
+        <input
+            type="hidden"
+            name="valeur_reference"
+            value="{{ resultat.evaluation_exposition.valeur_reference or '' }}"
+        >
+
+        <div class="grid">
+
+            <div class="info-box">
+
+                <strong>Dose animale</strong>
+
+                <br><br>
+
+                <input
+                    type="number"
+                    step="any"
+                    name="dose_animale"
+                    placeholder="ex. 100"
+                >
+
+                <small>mg/kg</small>
+
+            </div>
+
+            <div class="info-box">
+
+                <strong>Espèce</strong>
+
+                <br><br>
+
+                <select name="espece">
+
+                    <option value="rat">Rat</option>
+                    <option value="souris">Souris</option>
+                    <option value="hamster">Hamster</option>
+                    <option value="lapin">Lapin</option>
+                    <option value="chien">Chien</option>
+
+                </select>
+
+            </div>
+
+            <div class="info-box">
+
+                <strong>Contexte</strong>
+
+                <br><br>
+
+                <select name="contexte">
+
+                    <option value="MRSD_initiale">
+                        MRSD initiale
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+        <br>
+
+        <button type="submit">
+            🧮 Calculer HED / dose de référence
+        </button>
+
+    </form>
+
+</div>
+
+<!-- =====================================================
+     RESULTATS HED — SENTOX
+===================================================== -->
+
+{% set hed = resultat.evaluation_hed %}
+
+{% if hed %}
+
+<div class="card">
+
+    <h2>📐 Résultats HED SENTOX</h2>
+
+    {% if hed.statut == "CALCULEE" %}
+
+    <div class="grid">
+
+        <div class="info-box">
+            <strong>Dose animale</strong>
+            <br>
+            {{ hed.dose_animale }} mg/kg
+        </div>
+
+        <div class="info-box">
+            <strong>Espèce</strong>
+            <br>
+            {{ hed.espece }}
+        </div>
+
+        <div class="info-box">
+            <strong>Km animal</strong>
+            <br>
+            {{ hed.Km_animal }}
+        </div>
+
+        <div class="info-box">
+            <strong>Km humain</strong>
+            <br>
+            {{ hed.Km_humain }}
+        </div>
+
+        <div class="info-box">
+            <strong>HED</strong>
+            <br>
+            <span style="font-size: 1.4em;">
+                {{ hed.HED }}
+            </span>
+            mg/kg
+            <br>
+            <span class="badge predit">
+                CALCULÉE
+            </span>
+        </div>
+
+        <div class="info-box">
+            <strong>Facteur de sécurité</strong>
+            <br>
+            {{ hed.facteur_securite }}
+        </div>
+
+        <div class="info-box">
+            <strong>Contexte</strong>
+            <br>
+            {{ hed.contexte }}
+        </div>
+
+        <div class="info-box">
+            <strong>Dose de référence calculée</strong>
+            <br>
+            <span style="font-size: 1.4em;">
+                {{ hed.dose_reference }}
+            </span>
+            mg/kg
+            <br>
+            <span class="badge predit">
+                CALCULÉE
+            </span>
+        </div>
+
+    </div>
+
+    <div class="warning">
+
+        <strong>⚠️ Attention toxicologique</strong>
+
+        <p>
+            La HED est une conversion de dose animale en équivalent
+            humain basée sur les facteurs Km. La dose de référence
+            calculée à partir d'un facteur de sécurité ne constitue
+            pas automatiquement une dose thérapeutique ni une dose
+            sûre chez l'humain.
+        </p>
+
+    </div>
+
+    {% elif hed.statut == "ERREUR" %}
+
+    <div class="warning">
+
+        <strong>⚠️ HED non calculée</strong>
+
+        <p>
+            {{ hed.erreur }}
+        </p>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endif %}
+
+<!-- =====================================================
+     EVALUATION D'EXPOSITION — MOE / RQ
+===================================================== -->
+
+<div class="card">
+
+    <h2>📊 Évaluation d'exposition SENTOX</h2>
+
+    <p>
+        Saisissez les données toxicologiques et d'exposition
+        disponibles pour calculer le MOE et le RQ.
+    </p>
+
+    <form method="POST" action="/analyse">
+
+        <input
+            type="hidden"
+            name="element"
+            value="{{ element }}"
+        >
+
+        <input
+            type="hidden"
+            name="type"
+            value="{{ type_element }}"
+        >
+
+        <div class="grid">
+
+            <div class="info-box">
+                <strong>Point de départ toxicologique</strong>
+                <br><br>
+                <input
+                    type="number"
+                    step="any"
+                    name="point_depart"
+                    placeholder="ex. 100"
+                    value="{{ resultat.evaluation_exposition.point_depart or '' }}"
+                >
+                <small>mg/kg</small>
+            </div>
+
+            <div class="info-box">
+                <strong>Exposition humaine</strong>
+                <br><br>
+                <input
+                    type="number"
+                    step="any"
+                    name="exposition_humaine"
+                    placeholder="ex. 1"
+                    value="{{ resultat.evaluation_exposition.exposition_humaine or '' }}"
+                >
+                <small>mg/kg</small>
+            </div>
+
+            <div class="info-box">
+                <strong>Valeur de référence</strong>
+                <br><br>
+                <input
+                    type="number"
+                    step="any"
+                    name="valeur_reference"
+                    placeholder="ex. 1"
+                    value="{{ resultat.evaluation_exposition.valeur_reference or '' }}"
+                >
+                <small>mg/kg</small>
+            </div>
+
+        </div>
+
+        <br>
+
+        <button type="submit">
+            🧮 Calculer MOE / RQ
+        </button>
+
+    </form>
+
+    {% set evaluation = resultat.evaluation_exposition %}
+
+    {% if evaluation %}
+
+        <div class="grid">
+
+            <div class="info-box">
+                <strong>MOE</strong>
+                <br>
+
+                {% if evaluation.MOE is not none %}
+                    <span style="font-size: 1.4em;">
+                        {{ evaluation.MOE }}
+                    </span>
+                    <br>
+                    <span class="badge predit">
+                        {{ evaluation.statut_MOE }}
+                    </span>
+                {% else %}
+                    <span class="empty">
+                        Non calculée
+                    </span>
+                {% endif %}
+            </div>
+
+            <div class="info-box">
+                <strong>RQ</strong>
+                <br>
+
+                {% if evaluation.RQ is not none %}
+                    <span style="font-size: 1.4em;">
+                        {{ evaluation.RQ }}
+                    </span>
+                    <br>
+                    <span class="badge predit">
+                        {{ evaluation.statut_RQ }}
+                    </span>
+                {% else %}
+                    <span class="empty">
+                        Non calculé
+                    </span>
+                {% endif %}
+            </div>
+
+        </div>
+
+    {% endif %}
+
+    <div class="warning">
+
+        <strong>⚠️ Interprétation</strong>
+
+        <p>
+            Le MOE et le RQ sont des indicateurs toxicologiques
+            calculés à partir des valeurs saisies. Leur interprétation
+            doit tenir compte du contexte toxicologique, de la qualité
+            des données et du cadre réglementaire applicable.
+        </p>
+
+    </div>
+
+</div>
+
+<!-- =====================================================
+     PROFIL TOXICOLOGIQUE SENTOX V2
+===================================================== -->
+
+<div class="card">
+
+    <h2>
+        🧪 Profil toxicologique SENTOX V2
+    </h2>
+
+    {% set tox_v2 = resultat.toxicologie_v2 %}
+
+    {% if tox_v2 and tox_v2.resultats %}
+
+        {% set tv2 = tox_v2.resultats[0] %}
+
+        <div class="grid">
+
+            <div class="info-box">
+                <strong>Base toxicologique</strong>
+                <br>
+                {{ tox_v2.statut }}
+            </div>
+
+            <div class="info-box">
+                <strong>Tox_ID</strong>
+                <br>
+                {{ tv2.Tox_ID }}
+            </div>
+
+            <div class="info-box">
+                <strong>Endpoint</strong>
+                <br>
+                {{ tv2.Endpoint }}
+            </div>
+
+            <div class="info-box">
+                <strong>Valeur</strong>
+                <br>
+                {% if tv2.Valeur is not none and tv2.Valeur|string != 'nan' %}
+                    {{ tv2.Valeur }} {{ tv2.Unite }}
+                {% else %}
+                    <span class="empty">Non disponible</span>
+                {% endif %}
+            </div>
+
+            <div class="info-box">
+                <strong>Espèce</strong>
+                <br>
+                {% if tv2.Espece and tv2.Espece|string != 'nan' %}
+                    {{ tv2.Espece }}
+                {% else %}
+                    <span class="empty">Non précisée</span>
+                {% endif %}
+            </div>
+
+            <div class="info-box">
+                <strong>Voie d'exposition</strong>
+                <br>
+                {% if tv2.Voie_exposition and tv2.Voie_exposition|string != 'nan' %}
+                    {{ tv2.Voie_exposition }}
+                {% else %}
+                    <span class="empty">Non précisée</span>
+                {% endif %}
+            </div>
+
+            <div class="info-box">
+                <strong>HED</strong>
+                <br>
+                {% if tv2.HED is not none and tv2.HED|string != 'nan' %}
+                    {{ tv2.HED }} mg/kg
+                    <span class="badge predit">CALCULÉE</span>
+                {% else %}
+                    <span class="empty">Non calculée</span>
+                {% endif %}
+            </div>
+
+            <div class="info-box">
+                <strong>Dose de référence</strong>
+                <br>
+                {% if tv2.Dose_reference_humaine is not none and tv2.Dose_reference_humaine|string != 'nan' %}
+                    {{ tv2.Dose_reference_humaine }} mg/kg
+                    <span class="badge predit">CALCULÉE</span>
+                {% else %}
+                    <span class="empty">Non disponible</span>
+                {% endif %}
+            </div>
+
+            <div class="info-box">
+                <strong>Exposition humaine</strong>
+                <br>
+                {% if tv2.Exposition_humaine is not none and tv2.Exposition_humaine|string != 'nan' %}
+                    {{ tv2.Exposition_humaine }}
+                {% else %}
+                    <span class="empty">Non disponible</span>
+                {% endif %}
+            </div>
+
+            <div class="info-box">
+                <strong>MOE</strong>
+                <br>
+                {% if tv2.MOE is not none and tv2.MOE|string != 'nan' %}
+                    {{ tv2.MOE }}
+                    <span class="badge predit">CALCULÉE</span>
+                {% else %}
+                    <span class="empty">Non calculée</span>
+                {% endif %}
+            </div>
+
+            <div class="info-box">
+                <strong>RQ</strong>
+                <br>
+                {% if tv2.RQ is not none and tv2.RQ|string != 'nan' %}
+                    {{ tv2.RQ }}
+                    <span class="badge predit">CALCULÉ</span>
+                {% else %}
+                    <span class="empty">Non calculé</span>
+                {% endif %}
+            </div>
+
+            <div class="info-box">
+                <strong>Qualité des données</strong>
+                <br>
+                {{ tv2.Qualite_donnee }}
+            </div>
+
+            <div class="info-box">
+                <strong>Source</strong>
+                <br>
+                {{ tv2.Source }}
+            </div>
+
+        </div>
+
+        {% if tv2.Commentaire_SENTOX %}
+
+            <div class="warning">
+                <strong>⚠️ Commentaire SENTOX</strong>
+                <p>
+                    {{ tv2.Commentaire_SENTOX }}
+                </p>
+            </div>
+
+        {% endif %}
+
+    {% else %}
+
+        <p class="empty">
+            Aucune donnée toxicologique V2 disponible pour cet élément.
+        </p>
+
+    {% endif %}
+
+</div>
+
+
+<!-- =====================================================
      ADME
 ===================================================== -->
 
@@ -873,31 +1397,49 @@
 
     <div class="grid">
 
+        <!-- ========================= -->
+        <!-- STRUCTURE 2D -->
+        <!-- ========================= -->
+
         <div class="info-box">
 
             <strong>
-                🔬 Structure 2D
+                🔬 Structure moléculaire 2D
             </strong>
 
-            {% if mol.structure_2d %}
+            {% if mol.structure_2d and mol.structure_2d.disponible %}
 
                 <p>
-                    Statut :
+                    <strong>Statut :</strong>
                     {{ mol.structure_2d.statut }}
                 </p>
 
-                {% if mol.structure_2d.smiles %}
+                <div
+                    style="
+                        background:#ffffff;
+                        border-radius:12px;
+                        padding:15px;
+                        margin-top:15px;
+                        text-align:center;
+                        overflow:auto;
+                    "
+                >
 
-                    <code>
-                        {{ mol.structure_2d.smiles }}
-                    </code>
+                    {{ mol.structure_2d.svg | safe }}
 
-                {% endif %}
+                </div>
+
+                <p style="margin-top:10px;">
+                    <small>
+                        Structure 2D générée automatiquement par RDKit
+                        à partir du SMILES.
+                    </small>
+                </p>
 
             {% else %}
 
                 <span class="empty">
-                    Non disponible
+                    Structure 2D non disponible
                 </span>
 
             {% endif %}
@@ -905,31 +1447,92 @@
         </div>
 
 
+        <!-- ========================= -->
+        <!-- STRUCTURE 3D -->
+        <!-- ========================= -->
+
         <div class="info-box">
 
             <strong>
-                🧊 Structure 3D
+                🧊 Structure moléculaire 3D
             </strong>
 
-            {% if mol.structure_3d %}
+            {% if mol.structure_3d and mol.structure_3d.disponible %}
 
                 <p>
-                    Statut :
+                    <strong>Statut :</strong>
                     {{ mol.structure_3d.statut }}
                 </p>
 
-                {% if mol.structure_3d.smiles %}
+                <p>
+                    <small>
+                        Conformère 3D calculé avec RDKit —
+                        {{ mol.structure_3d.nombre_atomes }} atomes.
+                    </small>
+                </p>
 
-                    <code>
-                        {{ mol.structure_3d.smiles }}
-                    </code>
+                <pre
+                    id="sentox-molblock"
+                    style="display:none;"
+                >{{ mol.structure_3d.mol_block | default("", true) }}</pre>
 
-                {% endif %}
+                <div
+                    id="sentox-3d-viewer"
+                    style="
+                        width:100%;
+                        height:420px;
+                        position:relative;
+                        background:#f7f7f7;
+                        border-radius:12px;
+                        overflow:hidden;
+                    "
+                >
+                    <div
+                        id="sentox-3d-canvas"
+                        style="
+                            width:100%;
+                            height:100%;
+                        "
+                    ></div>
+                </div>
+
+                <div
+                    style="
+                        display:flex;
+                        gap:8px;
+                        flex-wrap:wrap;
+                        margin-top:12px;
+                    "
+                >
+
+                    <button
+                        type="button"
+                        onclick="sentoxStartRotation()"
+                    >
+                        ▶ Rotation
+                    </button>
+
+                    <button
+                        type="button"
+                        onclick="sentoxStopRotation()"
+                    >
+                        ⏸ Pause
+                    </button>
+
+                </div>
+
+                <p style="margin-top:10px;">
+                    <small>
+                        ⚠️ Modèle 3D computationnel généré à partir
+                        du SMILES. Il ne représente pas une structure
+                        expérimentale déterminée.
+                    </small>
+                </p>
 
             {% else %}
 
                 <span class="empty">
-                    Non disponible
+                    Structure 3D non disponible
                 </span>
 
             {% endif %}
@@ -937,6 +1540,151 @@
         </div>
 
     </div>
+
+    <!-- ========================= -->
+    <!-- PROFIL DE SIMILARITÉ -->
+    <!-- ========================= -->
+
+    <div class="info-box">
+
+        <strong>
+            🧬 Profil de similarité moléculaire
+        </strong>
+
+        {% if mol.similarite and mol.similarite.statut == "CALCULÉ — RDKit" %}
+
+            <p>
+                <strong>Moteur :</strong>
+                {{ mol.similarite.moteur }}
+            </p>
+
+            <p>
+                <strong>Méthode :</strong>
+                {{ mol.similarite.methode }}
+            </p>
+
+            <p>
+                <strong>Molécules de référence :</strong>
+                {{ mol.similarite.nombre_references }}
+            </p>
+
+            <p>
+                <strong>Meilleure similarité Tanimoto :</strong>
+                {{ mol.similarite.meilleure_similarite }}
+            </p>
+
+            <p>
+                <strong>Moyenne Top 5 :</strong>
+                {{ mol.similarite.moyenne_top5 }}
+            </p>
+
+            {% if mol.similarite.voisins %}
+
+                <h4>
+                    Molécules voisines
+                </h4>
+
+                <div style="overflow-x:auto;">
+
+                    <table style="width:100%; border-collapse:collapse;">
+
+                        <thead>
+
+                            <tr>
+                                <th style="padding:8px; text-align:left;">
+                                    #
+                                </th>
+
+                                <th style="padding:8px; text-align:left;">
+                                    Molécule
+                                </th>
+
+                                <th style="padding:8px; text-align:left;">
+                                    Tanimoto
+                                </th>
+
+                                <th style="padding:8px; text-align:left;">
+                                    Source
+                                </th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            {% for voisin in mol.similarite.voisins %}
+
+                                <tr>
+
+                                    <td style="padding:8px;">
+                                        {{ loop.index }}
+                                    </td>
+
+                                    <td style="padding:8px;">
+                                        {{ voisin.Nom }}
+                                    </td>
+
+                                    <td style="padding:8px;">
+                                        {{ voisin.similarite_tanimoto }}
+                                    </td>
+
+                                    <td style="padding:8px;">
+                                        {{ voisin.Source }}
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            {% endif %}
+
+            <p style="margin-top:12px;">
+
+                <small>
+                    {{ mol.similarite.interpretation }}
+                </small>
+
+            </p>
+
+            <p>
+
+                <small>
+                    ⚠️ {{ mol.similarite.avertissement }}
+                </small>
+
+            </p>
+
+        {% elif mol.similarite %}
+
+            <p>
+                <strong>Statut :</strong>
+                {{ mol.similarite.statut }}
+            </p>
+
+            {% if mol.similarite.message %}
+
+                <p>
+                    {{ mol.similarite.message }}
+                </p>
+
+            {% endif %}
+
+        {% else %}
+
+            <span class="empty">
+                Profil de similarité non disponible
+            </span>
+
+        {% endif %}
+
+    </div>
+
 
     <div class="warning">
 
@@ -1843,6 +2591,151 @@
 
 
 </main>
+
+
+<script id="SENTOX_VISUALISEUR_3D">
+/* ============================================================
+   SENTOX — VISUALISEUR MOLECULAIRE 3D
+   RDKit + 3Dmol.js
+   ============================================================ */
+
+let sentoxViewer = null;
+let sentoxRotation = null;
+
+function sentoxInit3D() {
+
+    const container =
+        document.getElementById("sentox-3d-canvas");
+
+    if (!container) {
+        return;
+    }
+
+    if (typeof $3Dmol === "undefined") {
+
+        container.innerHTML =
+            "<p style='padding:20px;color:#b71c1c;'>" +
+            "3Dmol.js n'est pas chargé." +
+            "</p>";
+
+        return;
+    }
+
+    const source =
+        document.getElementById("sentox-molblock");
+
+    if (!source) {
+
+        container.innerHTML =
+            "<p style='padding:20px;color:#777;'>" +
+            "MolBlock 3D non disponible." +
+            "</p>";
+
+        return;
+    }
+
+    const molBlock =
+        source.textContent.trim();
+
+    if (!molBlock) {
+
+        container.innerHTML =
+            "<p style='padding:20px;color:#777;'>" +
+            "Données 3D non disponibles." +
+            "</p>";
+
+        return;
+    }
+
+    sentoxViewer =
+        $3Dmol.createViewer(
+            container,
+            {
+                backgroundColor: "white"
+            }
+        );
+
+    sentoxViewer.addModel(
+        molBlock,
+        "pdb"
+    );
+
+    sentoxViewer.setStyle(
+        {},
+        {
+            stick: {
+                radius: 0.16
+            },
+            sphere: {
+                scale: 0.28
+            }
+        }
+    );
+
+    sentoxViewer.zoomTo();
+
+    if (typeof sentoxViewer.resize === "function") {
+        sentoxViewer.resize();
+    }
+
+    sentoxViewer.render();
+}
+
+
+function sentoxStartRotation() {
+
+    if (!sentoxViewer) {
+        sentoxInit3D();
+    }
+
+    if (!sentoxViewer) {
+        return;
+    }
+
+    if (sentoxRotation) {
+        return;
+    }
+
+    sentoxRotation = setInterval(
+        function () {
+
+            if (sentoxViewer) {
+
+                sentoxViewer.rotate(
+                    2,
+                    "y"
+                );
+
+                sentoxViewer.render();
+            }
+
+        },
+        50
+    );
+}
+
+
+function sentoxStopRotation() {
+
+    if (sentoxRotation) {
+
+        clearInterval(
+            sentoxRotation
+        );
+
+        sentoxRotation = null;
+    }
+}
+
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+        sentoxInit3D();
+    }
+);
+
+</script>
 
 </body>
 
