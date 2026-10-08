@@ -11,10 +11,17 @@ BASE_DIR = os.path.dirname(
     os.path.abspath(__file__)
 )
 
+PROJECT_DIR = os.path.dirname(
+    BASE_DIR
+)
+
 QSAR_DIR = os.path.join(
     BASE_DIR,
     "qsar"
 )
+
+if PROJECT_DIR not in sys.path:
+    sys.path.insert(0, PROJECT_DIR)
 
 if QSAR_DIR not in sys.path:
     sys.path.insert(0, QSAR_DIR)
@@ -226,18 +233,23 @@ def analyse():
     # DONNÉES D'EXPOSITION HUMAINE — OPTIONNELLES
     # -----------------------------------------------------
 
-    exposition_humaine = request.form.get(
-        "exposition_humaine",
+    concentration_mg_g = request.form.get(
+        "concentration_mg_g",
+        ""
+    ).strip()
+
+    quantite_g_jour = request.form.get(
+        "quantite_g_jour",
+        ""
+    ).strip()
+
+    poids_corporel_kg = request.form.get(
+        "poids_corporel_kg",
         ""
     ).strip()
 
     valeur_reference = request.form.get(
         "valeur_reference",
-        ""
-    ).strip()
-
-    point_depart = request.form.get(
-        "point_depart",
         ""
     ).strip()
 
@@ -371,30 +383,35 @@ def analyse():
             except (TypeError, ValueError):
                 return None
 
-        pd_val = valeur_positive(point_depart)
-        exp_val = valeur_positive(exposition_humaine)
+        concentration_val = valeur_positive(concentration_mg_g)
+        quantite_val = valeur_positive(quantite_g_jour)
+        poids_val = valeur_positive(poids_corporel_kg)
         ref_val = valeur_positive(valeur_reference)
 
+        dose_ingeree = None
+        exp_val = None
+
+        # Dose ingérée = concentration (mg/g) × quantité consommée (g/jour)
+        if concentration_val is not None and quantite_val is not None:
+            dose_ingeree = concentration_val * quantite_val
+
+        # Exposition = dose ingérée (mg/jour) / poids corporel (kg)
+        if dose_ingeree is not None and poids_val is not None:
+            exp_val = dose_ingeree / poids_val
+
         evaluation = {
-            "point_depart": pd_val,
+            "concentration_mg_g": concentration_val,
+            "quantite_g_jour": quantite_val,
+            "poids_corporel_kg": poids_val,
+            "dose_ingeree_mg_jour": dose_ingeree,
             "exposition_humaine": exp_val,
             "valeur_reference": ref_val,
+            "point_depart": None,
             "MOE": None,
             "RQ": None,
             "statut_MOE": "NON CALCULEE",
             "statut_RQ": "NON CALCULE",
         }
-
-        # MOE = point de départ / exposition humaine
-        if pd_val is not None and exp_val is not None:
-
-            resultat_moe = calculer_moe(
-                pd_val,
-                exp_val
-            )
-
-            evaluation["MOE"] = resultat_moe.get("MOE")
-            evaluation["statut_MOE"] = "CALCULEE"
 
         # RQ = exposition humaine / valeur de référence
         if exp_val is not None and ref_val is not None:
@@ -407,18 +424,31 @@ def analyse():
             evaluation["RQ"] = resultat_rq.get("RQ")
             evaluation["statut_RQ"] = "CALCULE"
 
+        # Le MOE nécessite un point de départ toxicologique
+        # exprimé dans une unité compatible avec l'exposition.
+        evaluation["Commentaire_MOE"] = (
+            "MOE non calculée automatiquement : "
+            "un point de départ toxicologique compatible "
+            "en mg/kg/jour est requis."
+        )
+
         resultat["evaluation_exposition"] = evaluation
 
     except Exception as e:
 
         resultat["evaluation_exposition"] = {
-            "point_depart": None,
+            "concentration_mg_g": None,
+            "quantite_g_jour": None,
+            "poids_corporel_kg": None,
+            "dose_ingeree_mg_jour": None,
             "exposition_humaine": None,
             "valeur_reference": None,
+            "point_depart": None,
             "MOE": None,
             "RQ": None,
             "statut_MOE": "ERREUR",
             "statut_RQ": "ERREUR",
+            "Commentaire_MOE": None,
             "erreur": str(e)
         }
 

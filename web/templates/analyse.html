@@ -721,19 +721,6 @@
             value="{{ type_element }}"
         >
 
-        <!-- Conserver les éventuelles données MOE/RQ -->
-        <input
-            type="hidden"
-            name="point_depart"
-            value="{{ resultat.evaluation_exposition.point_depart or '' }}"
-        >
-
-        <input
-            type="hidden"
-            name="exposition_humaine"
-            value="{{ resultat.evaluation_exposition.exposition_humaine or '' }}"
-        >
-
         <input
             type="hidden"
             name="valeur_reference"
@@ -947,29 +934,42 @@
         <div class="grid">
 
             <div class="info-box">
-                <strong>Point de départ toxicologique</strong>
+                <strong>Concentration</strong>
                 <br><br>
                 <input
                     type="number"
                     step="any"
-                    name="point_depart"
+                    name="concentration_mg_g"
                     placeholder="ex. 100"
-                    value="{{ resultat.evaluation_exposition.point_depart or '' }}"
+                    value="{{ resultat.evaluation_exposition.concentration_mg_g or '' }}"
                 >
-                <small>mg/kg</small>
+                <small>mg/g</small>
             </div>
 
             <div class="info-box">
-                <strong>Exposition humaine</strong>
+                <strong>Quantité consommée</strong>
                 <br><br>
                 <input
                     type="number"
                     step="any"
-                    name="exposition_humaine"
+                    name="quantite_g_jour"
                     placeholder="ex. 1"
-                    value="{{ resultat.evaluation_exposition.exposition_humaine or '' }}"
+                    value="{{ resultat.evaluation_exposition.quantite_g_jour or '' }}"
                 >
-                <small>mg/kg</small>
+                <small>g/jour</small>
+            </div>
+
+            <div class="info-box">
+                <strong>Poids corporel</strong>
+                <br><br>
+                <input
+                    type="number"
+                    step="any"
+                    name="poids_corporel_kg"
+                    placeholder="ex. 70"
+                    value="{{ resultat.evaluation_exposition.poids_corporel_kg or '' }}"
+                >
+                <small>kg</small>
             </div>
 
             <div class="info-box">
@@ -982,7 +982,7 @@
                     placeholder="ex. 1"
                     value="{{ resultat.evaluation_exposition.valeur_reference or '' }}"
                 >
-                <small>mg/kg</small>
+                <small>mg/kg/jour</small>
             </div>
 
         </div>
