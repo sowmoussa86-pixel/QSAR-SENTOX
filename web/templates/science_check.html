@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SENTOX | Science Check</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f2f7f5;
+            color: #19352f;
+        }
+        header {
+            background: linear-gradient(120deg, #064e3b, #087e8b);
+            color: white;
+            text-align: center;
+            padding: 30px 18px;
+        }
+        main { max-width: 850px; margin: 28px auto; padding: 0 16px; }
+        .panel {
+            background: white;
+            padding: 24px;
+            margin-bottom: 20px;
+            border-radius: 13px;
+            box-shadow: 0 4px 15px #153d3012;
+        }
+        label { display: block; margin: 16px 0 7px; font-weight: bold; }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5d1;
+            border-radius: 7px;
+            font: inherit;
+        }
+        textarea { min-height: 95px; resize: vertical; }
+        button, .link {
+            display: inline-block;
+            margin-top: 18px;
+            padding: 12px 17px;
+            background: #087e70;
+            color: white;
+            border: 0;
+            border-radius: 7px;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .verdict {
+            border-left: 5px solid #0d9488;
+            background: #effaf6;
+            padding: 16px;
+            line-height: 1.6;
+            overflow-wrap: anywhere;
+        }
+        li { margin: 9px 0; }
+        .note { color: #52645e; line-height: 1.6; }
+        footer { text-align: center; padding: 24px; color: #62736d; }
+    </style>
+</head>
+<body>
+<header>
+    <h1>🔬 SENTOX Science Check</h1>
+    <p>Une affirmation ? Nous analysons les preuves.</p>
+</header>
+
+<main>
+    <section class="panel">
+        <h2>Évaluer une affirmation scientifique</h2>
+        <p class="note">
+            Indique les informations disponibles. Le résultat est préliminaire :
+            le formulaire ne réalise pas encore de recherche bibliographique automatique.
+        </p>
+
+        <form method="post" action="/science-check">
+            <label for="affirmation">Affirmation à examiner *</label>
+            <textarea id="affirmation" name="affirmation" required
+                placeholder="Ex. : cette préparation soigne une infection...">{{ demande.affirmation if demande else '' }}</textarea>
+
+            <label for="domaine">Domaine</label>
+            <select id="domaine" name="domaine">
+                <option value="sante" {% if not demande or demande.domaine == 'sante' %}selected{% endif %}>Santé</option>
+                <option value="plantes" {% if demande and demande.domaine == 'plantes' %}selected{% endif %}>Plantes médicinales</option>
+                <option value="environnement" {% if demande and demande.domaine == 'environnement' %}selected{% endif %}>Environnement</option>
+                <option value="agriculture" {% if demande and demande.domaine == 'agriculture' %}selected{% endif %}>Agriculture et pesticides</option>
+                <option value="autre" {% if demande and demande.domaine == 'autre' %}selected{% endif %}>Autre</option>
+            </select>
+
+            <label for="niveau_preuve">Niveau de preuve disponible</label>
+            <select id="niveau_preuve" name="niveau_preuve">
+                {% set niveaux = [
+                    ('aucune', 'Aucune preuve fournie'),
+                    ('tradition', 'Usage traditionnel rapporté'),
+                    ('in_vitro', 'Étude in vitro'),
+                    ('animal', 'Étude animale'),
+                    ('observationnelle', 'Étude observationnelle humaine'),
+                    ('essai_clinique', 'Essai clinique rapporté'),
+                    ('revue_systematique', 'Revue systématique rapportée')
+                ] %}
+                {% for valeur, libelle in niveaux %}
+                <option value="{{ valeur }}"
+                    {% if demande and demande.niveau_preuve == valeur %}selected{% elif not demande and valeur == 'aucune' %}selected{% endif %}>
+                    {{ libelle }}
+                </option>
+                {% endfor %}
+            </select>
+
+            <label for="preparation_exacte">Préparation, composition, dose et voie d'administration</label>
+            <textarea id="preparation_exacte" name="preparation_exacte"
+                placeholder="Plante ou mélange, partie utilisée, préparation, dose, voie, durée...">{{ demande.preparation_exacte if demande else '' }}</textarea>
+
+            <label for="references">Références scientifiques ou liens connus</label>
+            <textarea id="references" name="references"
+                placeholder="Titre, auteurs, DOI, PMID ou URL">{{ demande.references if demande else '' }}</textarea>
+
+            <button type="submit">Analyser l'affirmation</button>
+        </form>
+    </section>
+
+    {% if resultat %}
+    <section class="panel" id="resultat">
+        <h2>Résultat de l'évaluation</h2>
+        <div class="verdict">
+            <strong>{{ resultat.verdict }}</strong>
+            <p><strong>Affirmation :</strong> {{ resultat.affirmation }}</p>
+            <p><strong>Niveau déclaré :</strong> {{ resultat.niveau_preuve_libelle }}</p>
+            <p><strong>Limite principale :</strong> {{ resultat.limite_principale }}</p>
+            <p><strong>Préparation :</strong> {{ resultat.preparation_exacte }}</p>
+            <p><strong>État des références :</strong> {{ resultat.statut_references }}</p>
+        </div>
+
+        <h3>Points à vérifier</h3>
+        <ul>
+            {% for point in resultat.points_a_verifier %}
+            <li>{{ point }}</li>
+            {% endfor %}
+        </ul>
+
+        <p class="note"><strong>Précaution :</strong> {{ resultat.avertissement }}</p>
+    </section>
+    {% endif %}
+
+    <a class="link" href="/rd">← Retour à SENTOX R&amp;D</a>
+</main>
+
+<footer>SENTOX R&amp;D — Science Check V1</footer>
+</body>
+</html>

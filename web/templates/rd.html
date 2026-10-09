@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SENTOX R&D | Recherche scientifique</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f2f7f5;
+            color: #19352f;
+        }
+        header {
+            background: linear-gradient(120deg, #064e3b, #087e8b);
+            color: white;
+            padding: 35px 20px;
+            text-align: center;
+        }
+        header h1 { margin: 0 0 12px; font-size: 32px; }
+        header p { margin: 0; line-height: 1.6; }
+        main { max-width: 1050px; margin: 30px auto; padding: 0 18px; }
+        .intro { text-align: center; margin-bottom: 28px; }
+        .modules {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 18px;
+        }
+        .card {
+            background: white;
+            border-radius: 14px;
+            padding: 23px;
+            box-shadow: 0 4px 15px #153d3012;
+            border-top: 4px solid #0d9488;
+        }
+        .icon { font-size: 34px; }
+        .card h2 { font-size: 20px; }
+        .card p { line-height: 1.6; color: #52645e; }
+        .link {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 11px 15px;
+            background: #087e70;
+            color: white;
+            text-decoration: none;
+            border-radius: 7px;
+            font-weight: bold;
+        }
+        .notice {
+            margin-top: 25px;
+            padding: 16px;
+            background: #fff8df;
+            border-radius: 10px;
+            line-height: 1.6;
+        }
+        footer { text-align: center; padding: 25px; color: #62736d; }
+    </style>
+</head>
+<body>
+<header>
+    <h1>🧪 SENTOX R&D</h1>
+    <p>Recherche, développement et évaluation scientifique</p>
+    <p><em>Une affirmation ? Nous analysons les preuves.</em></p>
+</header>
+
+<main>
+    <section class="intro">
+        <h2>Centre de recherche et d'innovation SENTOX</h2>
+        <p>
+            Un espace pour examiner les données scientifiques, étudier les molécules,
+            analyser les risques et documenter les hypothèses.
+        </p>
+    </section>
+
+    <section class="modules">
+        <article class="card">
+            <div class="icon">🔬</div>
+            <h2>Science Check</h2>
+            <p>Examiner une affirmation, préciser le niveau de preuve et distinguer
+            les données traditionnelles, expérimentales et cliniques.</p>
+            <a class="link" href="/science-check">Ouvrir Science Check</a>
+        </article>
+
+        <article class="card">
+            <div class="icon">🧬</div>
+            <h2>QSAR-SENTOX</h2>
+            <p>Étudier les structures moléculaires, les descripteurs et les
+            similarités chimiques pour orienter l'évaluation toxicologique.</p>
+            <a class="link" href="/">Accéder au logiciel</a>
+        </article>
+
+        <article class="card">
+            <div class="icon">⚗️</div>
+            <h2>Toxicologie & ADME</h2>
+            <p>Explorer les indicateurs d'absorption, de distribution,
+            de métabolisme et d'excrétion, ainsi que les données toxicologiques.</p>
+            <a class="link" href="/">Accéder aux analyses</a>
+        </article>
+
+        <article class="card">
+            <div class="icon">📊</div>
+            <h2>Évaluation des risques</h2>
+            <p>Préparer l'analyse des doses de référence, de la marge
+            d'exposition (MOE) et du quotient de risque (RQ), selon les données disponibles.</p>
+            <a class="link" href="/">Accéder au logiciel</a>
+        </article>
+
+        <article class="card">
+            <div class="icon">🌿</div>
+            <h2>Plantes & mélanges</h2>
+            <p>Documenter les plantes, les préparations, leurs constituants
+            et les interactions potentielles à étudier.</p>
+            <a class="link" href="/">Explorer le logiciel</a>
+        </article>
+
+        <article class="card">
+            <div class="icon">📚</div>
+            <h2>Recherche bibliographique</h2>
+            <p>Préparer la traçabilité des références, des résultats publiés
+            et des limites des études scientifiques.</p>
+            <span>Module à développer</span>
+        </article>
+    </section>
+
+    <section class="notice">
+        <strong>Important :</strong> les prédictions QSAR et les indicateurs
+        structurels ne remplacent pas les essais expérimentaux ni l'évaluation
+        clinique. Toute conclusion doit préciser les données utilisées,
+        leurs limites et les incertitudes.
+    </section>
+</main>
+
+<footer>SENTOX R&D — Toxicologie, santé, environnement et innovation</footer>
+</body>
+</html>

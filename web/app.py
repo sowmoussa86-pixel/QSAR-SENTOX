@@ -31,6 +31,8 @@ if QSAR_DIR not in sys.path:
 # SENTOX — MODULES SCIENTIFIQUES
 # =========================================================
 
+from science_check_engine import evaluer_affirmation
+
 from sentox_engine import (
     analyser_element,
     analyser_melange
@@ -779,6 +781,42 @@ def analyse_melange():
         conclusion=conclusion,
 
         mode="melange"
+    )
+
+
+@app.route("/rd")
+def recherche_developpement():
+    return render_template("rd.html")
+
+
+@app.route("/science-check", methods=["GET", "POST"])
+def science_check():
+    demande = None
+    resultat = None
+
+    if request.method == "POST":
+        demande = {
+            "affirmation": request.form.get("affirmation", "").strip(),
+            "domaine": request.form.get("domaine", "sante").strip(),
+            "niveau_preuve": request.form.get("niveau_preuve", "aucune").strip(),
+            "preparation_exacte": request.form.get("preparation_exacte", "").strip(),
+            "references": request.form.get("references", "").strip(),
+        }
+
+        try:
+            resultat = evaluer_affirmation(**demande)
+        except ValueError as erreur:
+            return render_template(
+                "science_check.html",
+                demande=demande,
+                resultat=None,
+                erreur=str(erreur)
+            )
+
+    return render_template(
+        "science_check.html",
+        demande=demande,
+        resultat=resultat
     )
 
 
