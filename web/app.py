@@ -32,6 +32,7 @@ if QSAR_DIR not in sys.path:
 # =========================================================
 
 from science_check_engine import evaluer_affirmation
+from pubmed_engine import rechercher_pubmed, PubMedError
 
 from sentox_engine import (
     analyser_element,
@@ -793,30 +794,41 @@ def recherche_developpement():
 def science_check():
     demande = None
     resultat = None
+    recherche = None
+    erreur = None
 
     if request.method == "POST":
-        demande = {
-            "affirmation": request.form.get("affirmation", "").strip(),
-            "domaine": request.form.get("domaine", "sante").strip(),
-            "niveau_preuve": request.form.get("niveau_preuve", "aucune").strip(),
-            "preparation_exacte": request.form.get("preparation_exacte", "").strip(),
-            "references": request.form.get("references", "").strip(),
-        }
+        action = request.form.get("action", "evaluer").strip()
 
-        try:
-            resultat = evaluer_affirmation(**demande)
-        except ValueError as erreur:
-            return render_template(
-                "science_check.html",
-                demande=demande,
-                resultat=None,
-                erreur=str(erreur)
-            )
+        if action == "rechercher_pubmed":
+            termes = request.form.get("termes_pubmed", "").strip()
+            limite = request.form.get("limite_pubmed", "5")
+
+            try:
+                recherche = rechercher_pubmed(termes, limite=limite)
+            except (ValueError, PubMedError) as exc:
+                erreur = str(exc)
+
+        else:
+            demande = {
+                "affirmation": request.form.get("affirmation", "").strip(),
+                "domaine": request.form.get("domaine", "sante").strip(),
+                "niveau_preuve": request.form.get("niveau_preuve", "aucune").strip(),
+                "preparation_exacte": request.form.get("preparation_exacte", "").strip(),
+                "references": request.form.get("references", "").strip(),
+            }
+
+            try:
+                resultat = evaluer_affirmation(**demande)
+            except ValueError as exc:
+                erreur = str(exc)
 
     return render_template(
         "science_check.html",
         demande=demande,
-        resultat=resultat
+        resultat=resultat,
+        recherche=recherche,
+        erreur=erreur
     )
 
 

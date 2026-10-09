@@ -118,6 +118,91 @@
         </form>
     </section>
 
+    <section class="panel">
+        <h2>📚 Recherche bibliographique PubMed</h2>
+        <p class="note">
+            Recherchez des publications scientifiques indexées dans PubMed.
+            Les résultats bibliographiques ne constituent pas, à eux seuls,
+            une validation de l'efficacité ou de l'innocuité.
+        </p>
+
+        <form method="post" action="/science-check">
+            <input type="hidden" name="action" value="rechercher_pubmed">
+
+            <label for="termes_pubmed">Mots-clés de recherche</label>
+            <input
+                id="termes_pubmed"
+                name="termes_pubmed"
+                type="text"
+                required
+                maxlength="300"
+                placeholder="Ex. : Moringa oleifera toxicity"
+                value="{{ recherche.requete if recherche else '' }}"
+            >
+
+            <label for="limite_pubmed">Nombre maximal d'articles</label>
+            <select id="limite_pubmed" name="limite_pubmed">
+                <option value="5">5 articles</option>
+                <option value="10">10 articles</option>
+                <option value="20">20 articles</option>
+            </select>
+
+            <button type="submit">🔎 Rechercher dans PubMed</button>
+        </form>
+    </section>
+
+    {% if erreur %}
+    <section class="panel">
+        <h3>Recherche ou évaluation impossible</h3>
+        <p>{{ erreur }}</p>
+    </section>
+    {% endif %}
+
+    {% if recherche %}
+    <section class="panel" id="publications">
+        <h2>Résultats PubMed</h2>
+        <p>
+            Requête : <strong>{{ recherche.requete }}</strong>
+        </p>
+        <p>
+            {{ recherche.nombre_total }} résultat(s) correspondant(s) à la requête ;
+            {{ recherche.nombre_recupere }} article(s) récupéré(s).
+        </p>
+
+        {% if recherche.articles %}
+            {% for article in recherche.articles %}
+            <article class="verdict">
+                <h3>{{ article.titre }}</h3>
+                <p><strong>Auteurs :</strong>
+                    {{ article.auteurs | join(", ") if article.auteurs else "Non renseignés" }}
+                </p>
+                <p><strong>Année :</strong> {{ article.annee or "Non renseignée" }}</p>
+                <p><strong>Revue :</strong> {{ article.revue or "Non renseignée" }}</p>
+                <p><strong>PMID :</strong> {{ article.pmid or "Non renseigné" }}</p>
+                <p><strong>DOI :</strong> {{ article.doi or "Non renseigné" }}</p>
+
+                {% if article.resume %}
+                <details>
+                    <summary>Consulter le résumé disponible</summary>
+                    <p>{{ article.resume }}</p>
+                </details>
+                {% endif %}
+
+                {% if article.url %}
+                <p><a href="{{ article.url }}" target="_blank" rel="noopener noreferrer">
+                    Consulter la notice originale dans PubMed ↗
+                </a></p>
+                {% endif %}
+            </article>
+            {% endfor %}
+        {% else %}
+            <p>Aucun article récupéré pour cette requête. Essayez d'autres mots-clés.</p>
+        {% endif %}
+
+        <p class="note">{{ recherche.avertissement }}</p>
+    </section>
+    {% endif %}
+
     {% if resultat %}
     <section class="panel" id="resultat">
         <h2>Résultat de l'évaluation</h2>
