@@ -1,0 +1,317 @@
+[
+  {
+    "CID": 125,
+    "extrait_brut": "g-term exposure, and the numerical measures of toxicity [e.g., acute toxicity estimates such as the LD50 (median lethal dose, the estimated amount of a chemical expected to kill 50% of test animals in a single dose)]. This section also includes information on whether the chemical is considered as a potential carcinogen ac",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 180,
+    "extrait_brut": "/AQUATIC SPECIES/ The /Oncorhynchus mykiss (Rainbow trout)/ 24 hr LC50 for acetone and ethanol in a flow-through bioassay system at 10 °C plus or minus 0.5, are 6100 mg/L and 11,200 mg/L, respectively. ... Acetone and ethanol, at about 0.48 and 0.26 of the fingerling LC50, respectively, af",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 180,
+    "extrait_brut": "LC50 (rat) =50,100 mg/m3/8H",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 180,
+    "extrait_brut": "LC50; Species: /Oncorhynchus mykiss/ (Rainbow trout) weight 1.0 g; Conditions: /static/, 12 °C; Concentration: 5,540 mg/L for 96 hr (95% confidence limit: 4,740-6,330 mg/L)",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 180,
+    "extrait_brut": "LC50; Species: Coturnix japonica (Japanese quail) age 14 days; oral >40,000 ppm, in diet, (no mortality to 40,000 ppm)",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 180,
+    "extrait_brut": "LC50; Species: Phasianus colchicus (Ring-necked pheasant) age 10 days; oral >40,000 ppm, in diet, (no mortality to 40,000 ppm)",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 180,
+    "extrait_brut": "LD50 Mouse oral 3000 mg/kg bw",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 180,
+    "extrait_brut": "LD50 Rat oral 10.7 mL/kg (=8450 mg/kg bw)",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 180,
+    "extrait_brut": "LD50 Rat oral 5800 mg/kg bw",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 180,
+    "extrait_brut": "LD50 Rat oral 9800 mg/kg bw",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 180,
+    "extrait_brut": "LD50: 2400 mg/kg/day (Oral, Mouse) (N004)",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 180,
+    "extrait_brut": "Pretreatment with acetone for 6 days (one-tenth the LD50) potentiated acute ethanol toxicity in rats. ... /Investigators/ ... demonstrated that acetone pretreatment potentiates chlorinated hydrocarbon toxicity. ... Acetone protected animals against electroshock or isonicotini",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 180,
+    "extrait_brut": "Quantitative toxicity values (e.g., EC50 and LC50) for various aquatic and/or terrestrial organisms in the ecosystem.",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 180,
+    "extrait_brut": "ected to cause death in a test subject. It is usually expressed as the median lethal concentration (LC50), which is the estimated concentration of a chemical expected to cause death in 50% of the test subjects. There are also other measures such as LC0 (no deaths) and LC100 (all deaths).",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 180,
+    "extrait_brut": "g-term exposure, and the numerical measures of toxicity [e.g., acute toxicity estimates such as the LD50 (median lethal dose, the estimated amount of a chemical expected to kill 50% of test animals in a single dose)]. This section also includes information on whether the chemical is considered as a potential carcinogen ac",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 180,
+    "extrait_brut": "hese values are commonly expressed as dose-based toxicity endpoints such as the median lethal dose (LD50), which represents the estimated dose expected to cause death in 50% of the test subjects. Other endpoints include LD0 (no observed deaths) and LD100 (death in all test subjects).",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 180,
+    "extrait_brut": "l tissues and organs of the body where they can be used as a source of energy. ANIMAL STUDIES: Oral LD50 values in adult rats are in the range of 5800-7138 mg/kg. Mice were given 2,500, 5,000, 10,000, 20,000, or 50,000 ppm acetone (females) and 1,250, 2,500, 5,000, 10,000, or 20,000 ppm acetone (males) via drinking water",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 180,
+    "extrait_brut": "mal tests and/or acute human studies are presented in this section. Acute animal studies consist of LD50 and LC50 tests, which present the median lethal dose (or concentration) to the animals. Acute human studies usually consist of case reports from accidental poisonings or industrial accidents. These case reports often he",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 241,
+    "extrait_brut": "LC50 (rat) = 10,000 ppm/7h",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 241,
+    "extrait_brut": "LC50 Rat ihl 10,000 ppm/7 hr",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 241,
+    "extrait_brut": "LC50: 9980 ppm (Inhalation, Mouse) (T14)",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 241,
+    "extrait_brut": "LC50; Species: Cancer magister (crab larvae) stage 1; Concentration: 108 ppm for 96 hr /Conditions of bioassay not specified/",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 241,
+    "extrait_brut": "LC50; Species: Crangon franciscorum (shrimp); Concentration: 20 ppm for 96 hr /Conditions of bioassay not specified/",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 241,
+    "extrait_brut": "LC50; Species: Palaemonetes pugio (grass shrimp); Concentration: 27 ppm for 96 hr /Conditions of bioassay not specified/",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 241,
+    "extrait_brut": "LD50 340 mg/kg (Intraperitoneal, Mouse) (T14)",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 241,
+    "extrait_brut": "LD50 Mice ip 0.34 mL/kg",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 241,
+    "extrait_brut": "LD50 Rat ip 2890 ug/kg",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 241,
+    "extrait_brut": "LD50 Rat oral 3306 mg/kg",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 241,
+    "extrait_brut": "LD50: 3306 mg/kg (Oral, Rat) (T14)",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 241,
+    "extrait_brut": "Quantitative toxicity values (e.g., EC50 and LC50) for various aquatic and/or terrestrial organisms in the ecosystem.",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 241,
+    "extrait_brut": "ected to cause death in a test subject. It is usually expressed as the median lethal concentration (LC50), which is the estimated concentration of a chemical expected to cause death in 50% of the test subjects. There are also other measures such as LC0 (no deaths) and LC100 (all deaths).",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 241,
+    "extrait_brut": "g-term exposure, and the numerical measures of toxicity [e.g., acute toxicity estimates such as the LD50 (median lethal dose, the estimated amount of a chemical expected to kill 50% of test animals in a single dose)]. This section also includes information on whether the chemical is considered as a potential carcinogen ac",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 241,
+    "extrait_brut": "hese values are commonly expressed as dose-based toxicity endpoints such as the median lethal dose (LD50), which represents the estimated dose expected to cause death in 50% of the test subjects. Other endpoints include LD0 (no observed deaths) and LD100 (death in all test subjects).",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 241,
+    "extrait_brut": "mal tests and/or acute human studies are presented in this section. Acute animal studies consist of LD50 and LC50 tests, which present the median lethal dose (or concentration) to the animals. Acute human studies usually consist of case reports from accidental poisonings or industrial accidents. These case reports often he",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 289,
+    "extrait_brut": "LC50; Species: Crangon septemspinosa (Bay shrimp); Conditions: renewal; Concentration: >44 mg/L for 96 hr",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 289,
+    "extrait_brut": "LC50; Species: Pimephales promelas (Fathead minnow); Conditions: flow through bioassay with measured concentrations, 25.6 °C, dissolved oxygen 6.4 mg/L, hardness 46.0 mg/L calcium carbonate, alkalinity 40.2 mg/L calcium carb",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 289,
+    "extrait_brut": "LD50 Mouse ip 190 mg/kg",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 289,
+    "extrait_brut": "LD50 Mouse oral 260 mg/kg",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 289,
+    "extrait_brut": "LD50 Rabbit dermal 800 mg/kg",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 289,
+    "extrait_brut": "LD50 Rat oral 300 mg/kg",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 289,
+    "extrait_brut": "Quantitative toxicity values (e.g., EC50 and LC50) for various aquatic and/or terrestrial organisms in the ecosystem.",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 289,
+    "extrait_brut": "ected to cause death in a test subject. It is usually expressed as the median lethal concentration (LC50), which is the estimated concentration of a chemical expected to cause death in 50% of the test subjects. There are also other measures such as LC0 (no deaths) and LC100 (all deaths).",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 289,
+    "extrait_brut": "g-term exposure, and the numerical measures of toxicity [e.g., acute toxicity estimates such as the LD50 (median lethal dose, the estimated amount of a chemical expected to kill 50% of test animals in a single dose)]. This section also includes information on whether the chemical is considered as a potential carcinogen ac",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 289,
+    "extrait_brut": "hese values are commonly expressed as dose-based toxicity endpoints such as the median lethal dose (LD50), which represents the estimated dose expected to cause death in 50% of the test subjects. Other endpoints include LD0 (no observed deaths) and LD100 (death in all test subjects).",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  },
+  {
+    "CID": 289,
+    "extrait_brut": "mal tests and/or acute human studies are presented in this section. Acute animal studies consist of LD50 and LC50 tests, which present the median lethal dose (or concentration) to the animals. Acute human studies usually consist of case reports from accidental poisonings or industrial accidents. These case reports often he",
+    "statut_validation": "A vérifier",
+    "source_recuperation": "PubChem PUG View",
+    "statut_requete": "Réponse reçue"
+  }
+]
