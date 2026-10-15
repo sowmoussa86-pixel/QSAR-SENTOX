@@ -1,0 +1,116 @@
+import csv
+import json
+import re
+from pathlib import Path
+
+SOURCE = Path("data/ld50_candidats_pubchem_a_verifier.csv")
+SORTIE = Path("data/ld50_candidats_structures_a_verifier.csv")
+
+def extraire_texte(extrait):
+    try:
+        obj = json.loads(extrait)
+        textes = []
+
+        def parcourir(x):
+            if isinstance(x, dict):
+                if isinstance(x.get("String"), str):
+                    textes.append(x["String"])
+                for v in x.values():
+                    parcourir(v)
+            elif isinstance(x, list):
+                for v in x:
+                    parcourir(v)
+
+        parcourir(obj)
+        return " ".join(dict.fromkeys(textes)) or extrait
+    except (json.JSONDecodeError, TypeError):
+        return extrait
+
+def structurer(row):
+    texte = extraire_texte(row.get("Extrait_brut", ""))
+    rubrique = row.get("Rubrique_PubChem", "")
+    valeur = ""
+    unite = ""
+    espece = ""
+    voie = ""
+    statut = "A_VERIFIER_MANUELLEMENT"
+
+    # Les résumés généraux ne servent pas à extraire une valeur individuelle.
+    if "Toxicity Summary" in rubrique:
+        statut = "RESUME_GENERAL_NON_QUANTITATIF"
+    else:
+        # Les unités avec /day ne sont jamais normalisées automatiquement.
+        m = re.search(
+            r"\bLD\s*50\b.{0,100}?"
+            r"(\d+(?:\.\d+)?(?:\s*[-–]\s*\d+(?:\.\d+)?)?)\s*"
+            r"(mg/kg(?:\s*bw)?/day|mg/kg/day|mg/kg(?:\s*bw)?|g/kg|mL/kg)\b",
+            texte, re.I
+        )
+        if m:
+            valeur = m.group(1).replace(" ", "")
+            unite = m.group(2)
+            u = unite.lower().replace(" ", "")
+
+            if "day" in u:
+                statut = "QUARANTAINE_UNITE_A_VERIFIER"
+            elif u == "ml/kg":
+                statut = "CONVERSION_DENSITE_A_VERIFIER"
+            elif u == "g/kg":
+                statut = "CONVERSION_UNITE_A_VERIFIER"
+            else:
+                statut = "CANDIDAT_NUMERIQUE_A_VERIFIER"
+
+        # Espèce et voie recherchées dans le texte de la mesure.
+        m_espece = re.search(
+            r"\b(Rat|Mouse|Mice|Rabbit|Dog|Guinea pig)\b",
+            texte, re.I
+        )
+        if m_espece:
+            espece = m_espece.group(1)
+
+        m_voie = re.search(
+            r"\b(oral|dermal|inhalation|intraperitoneal|intravenous)\b",
+            texte, re.I
+        )
+        if m_voie:
+            voie = m_voie.group(1).lower()
+
+    return {
+        "CID": row.get("CID", ""),
+        "Nom_substance": row.get("Nom_substance", ""),
+        "Rubrique_PubChem": rubrique,
+        "Valeur_extraite": valeur,
+        "Unite_originale": unite,
+        "Espece": espece,
+        "Voie_exposition": voie,
+        "Source_toxicologie": row.get("Source_toxicologie", ""),
+        "Extrait_original": texte,
+        "Statut_validation": statut,
+    }
+
+def main():
+    if not SOURCE.exists():
+        raise FileNotFoundError(f"Fichier source introuvable : {SOURCE}")
+
+    with SOURCE.open(encoding="utf-8-sig", newline="") as f:
+        lignes = list(csv.DictReader(f))
+
+    resultats = [structurer(r) for r in lignes]
+    champs = [
+        "CID", "Nom_substance", "Rubrique_PubChem",
+        "Valeur_extraite", "Unite_originale", "Espece",
+        "Voie_exposition", "Source_toxicologie",
+        "Extrait_original", "Statut_validation"
+    ]
+
+    with SORTIE.open("w", encoding="utf-8-sig", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=champs)
+        w.writeheader()
+        w.writerows(resultats)
+
+    print("Candidats traités :", len(resultats))
+    print("Fichier créé :", SORTIE)
+    print("Aucune valeur n'a été automatiquement validée.")
+
+if __name__ == "__main__":
+    main()

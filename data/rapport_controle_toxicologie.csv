@@ -1,0 +1,5 @@
+﻿substance,CID,endpoint,espece,voie,valeur,unite,reference,statut,erreurs_controle,alertes_controle,decision
+Acetone,180,LD50,Rat,Orale,5800,mg/kg,"ATSDR, Toxicological Profile for Acetone",Source repérée - étude originale à vérifier,,Source non validée : exclure des calculs définitifs.,A VERIFIER - NON VALIDEE
+Acetone,180,LD50,Rat,Orale,9800,mg/kg,"European Chemicals Bureau, IUCLID Dataset, via PubChem",Source secondaire repérée - à vérifier,,Source non validée : exclure des calculs définitifs.,A VERIFIER - NON VALIDEE
+Acetone,180,LD50,Rat,Orale,8450,mg/kg,"European Chemicals Bureau, IUCLID Dataset, via PubChem",Conversion publiée - à vérifier,,Source non validée : exclure des calculs définitifs.,A VERIFIER - NON VALIDEE
+Benzene,241,LD50,Rat,Orale,3306,mg/kg,"Sax, Dangerous Properties of Industrial Materials, 11e éd., 2004, p. 360",Référence bibliographique repérée - à vérifier,,Source non validée : exclure des calculs définitifs.,A VERIFIER - NON VALIDEE
