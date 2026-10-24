@@ -1,0 +1,4 @@
+
+Record_ID,Plant_ID,Nom_scientifique,Partie_utilisee,Preparation,Solvant,Voie,Type_etude,Endpoint,Valeur_originale,Unite_originale,Valeur_mg_kg,Relation,Reference,Statut,Note_interpretation
+CASSIA_SIEBERIANA_PODPULP_TOMA2009,PAO2020-006,Cassia sieberiana DC.,Pulpe des gousses,Extrait aqueux,Eau,Orale,Toxicite aigue et etude subaigue,DL50,1.95,g/kg,1950,=,Toma et al. 2009,PROVISOIRE_A_VERIFIER,"Verifier l'article original; la revue rapporte aussi une etude subaigue de 5 semaines."
+CASSIA_SIEBERIANA_ROOTBARK_DONKOR2014,PAO2020-006,Cassia sieberiana DC.,Ecorce de racine,Extrait aqueux,Eau,Orale,Toxicite aigue et subchronique,DL50,>5000,mg/kg,5000,>,Donkor et al. 2014,PROVISOIRE_A_VERIFIER,">5000 mg/kg est une valeur limite rapportee et non une DL50 exacte de 5000 mg/kg."
