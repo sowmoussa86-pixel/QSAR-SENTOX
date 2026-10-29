@@ -1,2 +1,5 @@
 CID,Nom,SMILES,Endpoint,Valeur,Unite,Espece,Voie_exposition,Type_exposition,Duree,Source,Reference,Qualite_donnee,Statut
 887,Methanol,CO,LD50,5628,mg/kg,Non précisée,orale,aiguë,Non précisée,PubChem/HSDB,Prototype historique,À vérifier,Documentée
+5280343,Quercétine,C1=CC(=C(C=C1C2=C(C(=O)C3=C(C=C(C=C3O2)O)O)O)O)O,LD50,161,mg/kg,Rat,orale,aiguë,Non précisée,HSDB via PubChem,Sax Dangerous Properties of Industrial Materials 11th ed.,Source secondaire,Documentée
+5280343,Quercétine,C1=CC(=C(C=C1C2=C(C(=O)C3=C(C=C(C=C3O2)O)O)O)O)O,LD50,160,mg/kg,Mouse,orale,aiguë,Non précisée,HSDB via PubChem,IARC Monographs,Source secondaire,Documentée
+5280343,Quercétine,C1=CC(=C(C=C1C2=C(C(=O)C3=C(C=C(C=C3O2)O)O)O)O)O,LD50,18,mg/kg,Mouse,IV,aiguë,Non précisée,HSDB via PubChem,Sax Dangerous Properties of Industrial Materials 11th ed.,Source secondaire,Documentée

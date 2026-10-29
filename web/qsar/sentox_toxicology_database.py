@@ -16,18 +16,41 @@ def charger_base_toxicologique():
 
 def rechercher_toxicologie(cid):
     tox = charger_base_toxicologique()
-    resultat = tox[tox["CID"] == cid].copy()
+
+    resultat = tox[
+        tox["CID"].astype(str).str.strip()
+        == str(cid).strip()
+    ].copy()
+
     if resultat.empty:
         return []
-    return resultat.to_dict(orient="records")
+
+    return resultat.to_dict(
+        orient="records"
+    )
 
 
 def rechercher_molecule(cid):
+    # 1. Recherche dans la base structurelle principale
     structure = charger_base_structurelle()
-    resultat = structure[structure["CID"] == cid]
-    if resultat.empty:
-        return None
-    return resultat.iloc[0].to_dict()
+    resultat = structure[structure["CID"].astype(str) == str(cid)]
+
+    if not resultat.empty:
+        return resultat.iloc[0].to_dict()
+
+    # 2. Recherche dans la base des constituants végétaux
+    constituants_file = BASE_DIR / "data" / "constituants_enrichis.csv"
+
+    if constituants_file.exists():
+        constituants = pd.read_csv(constituants_file)
+        resultat = constituants[
+            constituants["CID"].astype(str) == str(cid)
+        ]
+
+        if not resultat.empty:
+            return resultat.iloc[0].to_dict()
+
+    return None
 
 
 def analyser_cid(cid):

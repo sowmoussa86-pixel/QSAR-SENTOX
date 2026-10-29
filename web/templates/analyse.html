@@ -299,6 +299,22 @@
 
 </div>
 
+<div class="card">
+    <h2>🧪 9. Exposition, MOE et RQ</h2>
+
+    {% if resultat.evaluation_risque and resultat.evaluation_risque.statut == "calculée" %}
+        <div class="success">
+            <p><strong>Exposition humaine :</strong> {{ resultat.evaluation_risque.exposition_humaine }} mg/kg/jour</p>
+            <p><strong>Point de départ :</strong> {{ resultat.evaluation_risque.point_depart }} mg/kg</p>
+            <p><strong>MOE :</strong> {{ resultat.evaluation_risque.MOE.MOE }}</p>
+            <p><strong>RQ :</strong> {{ resultat.evaluation_risque.RQ.RQ }}</p>
+            <small>Les valeurs MOE et RQ sont des indicateurs quantitatifs. Leur interprétation dépend du contexte toxicologique et réglementaire.</small>
+        </div>
+    {% else %}
+        <p class="empty">Évaluation d'exposition non disponible.</p>
+    {% endif %}
+</div>
+
 
 <!-- =====================================================
      ANALYSE INDIVIDUELLE

@@ -1,3 +1,4 @@
+import math
 import pandas as pd
 from pathlib import Path
 
@@ -93,6 +94,7 @@ def obtenir_km(espece):
     return km
 
 
+
 def valider_entrees(dose_animale, espece):
     """
     Vérifie que les données d'entrée sont valides.
@@ -100,9 +102,14 @@ def valider_entrees(dose_animale, espece):
 
     try:
         dose = float(dose_animale)
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):
         raise ValueError(
-            "La dose animale doit être un nombre."
+            "La dose animale doit être un nombre fini."
+        )
+
+    if not math.isfinite(dose):
+        raise ValueError(
+            "La dose animale doit être un nombre fini."
         )
 
     if dose <= 0:
@@ -119,6 +126,7 @@ def valider_entrees(dose_animale, espece):
     obtenir_km(espece)
 
     return True
+
 
 
 def calculer_hed(dose_animale, espece):
@@ -154,33 +162,23 @@ def calculer_hed(dose_animale, espece):
     }
 
 
+
 def obtenir_facteur_securite(contexte="MRSD_initiale"):
     """
     Retourne le facteur de sécurité de référence
     pour le contexte demandé.
-
-    Attention :
-        Ce facteur n'est pas une règle universelle.
-        Il doit être interprété selon le contexte
-        réglementaire et toxicologique approprié.
     """
 
     if not isinstance(contexte, str) or not contexte.strip():
-        raise ValueError(
-            "Le contexte doit être renseigné."
-        )
+        raise ValueError("Le contexte doit être renseigné.")
 
     df = charger_references()
-
     contexte_normalise = contexte.strip().lower()
 
     ligne = df[
-        (df["Parametre"].astype(str).str.lower() == "facteur_securite")
+        (df["Parametre"].astype(str).str.strip().str.lower() == "facteur_securite")
         & (
-            df["Contexte"]
-            .astype(str)
-            .str.strip()
-            .str.lower()
+            df["Contexte"].astype(str).str.strip().str.lower()
             == contexte_normalise
         )
     ]
@@ -194,17 +192,18 @@ def obtenir_facteur_securite(contexte="MRSD_initiale"):
 
     try:
         facteur = float(valeur)
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):
         raise ValueError(
             f"Facteur de sécurité invalide pour le contexte : {contexte}"
         )
 
-    if facteur <= 0:
+    if not math.isfinite(facteur) or facteur <= 0:
         raise ValueError(
-            "Le facteur de sécurité doit être supérieur à zéro."
+            "Le facteur de sécurité doit être un nombre fini strictement positif."
         )
 
     return facteur
+
 
 
 def calculer_dose_reference(

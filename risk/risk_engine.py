@@ -2,25 +2,32 @@
 # SENTOX - MOTEUR D'EVALUATION DU RISQUE V1
 # ============================================================
 
+import math
 
 def valider_valeur(valeur, nom):
     """
-    Vérifie qu'une valeur est numérique et positive.
+    Vérifie qu'une valeur est numérique, finie et positive.
     """
 
     try:
         valeur = float(valeur)
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):
         raise ValueError(
-            f"{nom} doit être numérique."
+            f"{nom} doit être un nombre fini."
+        )
+
+    if not math.isfinite(valeur):
+        raise ValueError(
+            f"{nom} doit être un nombre fini."
         )
 
     if valeur <= 0:
         raise ValueError(
-            f"{nom} doit être supérieure à zéro."
+            f"{nom} doit être strictement supérieure à zéro."
         )
 
     return valeur
+
 
 
 def calculer_moe(point_depart, exposition_humaine):

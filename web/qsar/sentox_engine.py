@@ -1,29 +1,29 @@
 # =========================================================
 # SENTOX ENGINE
 # Moteur central d'analyse toxicologique, pharmacologique
-# QSAR, ADME et interactions moléculaires
+# QSAR, ADME et interactions molÃ©culaires
 # =========================================================
 
 """
 SENTOX ENGINE
 
-Niveaux de données :
+Niveaux de donnÃ©es :
 
-DOCUMENTÉ
-    Donnée provenant d'une base ou d'une source scientifique.
+DOCUMENTÃ‰
+    DonnÃ©e provenant d'une base ou d'une source scientifique.
 
-CALCULÉ
-    Résultat obtenu à partir d'une formule déterministe.
+CALCULÃ‰
+    RÃ©sultat obtenu Ã  partir d'une formule dÃ©terministe.
 
-PRÉDIT
-    Résultat issu d'un modèle prédictif ou d'une estimation.
+PRÃ‰DIT
+    RÃ©sultat issu d'un modÃ¨le prÃ©dictif ou d'une estimation.
 
 NON DISPONIBLE
-    Aucune donnée exploitable trouvée.
+    Aucune donnÃ©e exploitable trouvÃ©e.
 
 IMPORTANT
-    Une prédiction SENTOX-QSAR ne constitue pas une preuve
-    expérimentale.
+    Une prÃ©diction SENTOX-QSAR ne constitue pas une preuve
+    expÃ©rimentale.
 """
 
 import os
@@ -36,6 +36,11 @@ import re
 import math
 import json
 from qsar.qsar_engine import calculer_descripteurs
+from sentox_adme_rdkit import calculer_adme_structure
+from sentox_toxicology_database import rechercher_toxicologie
+from risk.risk_engine import calculer_moe
+from risk.rq_engine import calculer_rq
+from exposure.exposure_engine import calculer_exposition
 
 # =========================================================
 # 1. CONFIGURATION
@@ -68,7 +73,7 @@ def resultat_sentox(
     commentaire=None
 ):
     """
-    Structure standardisée d'une donnée SENTOX.
+    Structure standardisÃ©e d'une donnÃ©e SENTOX.
     """
 
     return {
@@ -89,7 +94,7 @@ def documente(
 ):
     return resultat_sentox(
         valeur=valeur,
-        statut="documenté",
+        statut="documentÃ©",
         source=source,
         unite=unite,
         commentaire=commentaire
@@ -104,7 +109,7 @@ def calcule(
 ):
     return resultat_sentox(
         valeur=valeur,
-        statut="calculé",
+        statut="calculÃ©",
         source=source,
         unite=unite,
         commentaire=commentaire
@@ -120,7 +125,7 @@ def predit(
 ):
     return resultat_sentox(
         valeur=valeur,
-        statut="prédit",
+        statut="prÃ©dit",
         source=source,
         confiance=confiance,
         unite=unite,
@@ -137,7 +142,7 @@ def charger_base():
     Charge la base CSV si elle existe.
 
     Utilisation volontairement sans pandas afin que le moteur
-    reste facilement déployable.
+    reste facilement dÃ©ployable.
     """
 
     if not os.path.exists(FICHIER_CONSTITUANTS):
@@ -190,9 +195,9 @@ def rechercher_element(
     type_element="auto"
 ):
     """
-    Recherche un élément dans la base SENTOX.
+    Recherche un Ã©lÃ©ment dans la base SENTOX.
 
-    La recherche est effectuée dans toutes les colonnes.
+    La recherche est effectuÃ©e dans toutes les colonnes.
     """
 
     nom = str(nom).strip().lower()
@@ -227,7 +232,7 @@ def chercher_colonne(
     mots_cles
 ):
     """
-    Cherche une colonne dont le nom contient l'un des mots-clés.
+    Cherche une colonne dont le nom contient l'un des mots-clÃ©s.
     """
 
     if not donnees:
@@ -257,7 +262,7 @@ def extraire_valeur(
     mots_cles
 ):
     """
-    Retourne une valeur trouvée dans une ligne de base.
+    Retourne une valeur trouvÃ©e dans une ligne de base.
     """
 
     colonne = chercher_colonne(
@@ -288,7 +293,7 @@ def identifier_element(
     type_element="auto"
 ):
     """
-    Identifie un élément à partir de la base SENTOX.
+    Identifie un Ã©lÃ©ment Ã  partir de la base SENTOX.
     """
 
     resultats = rechercher_element(
@@ -317,7 +322,7 @@ def identifier_element(
             "produit",
             "substance",
             "molecule",
-            "molécule",
+            "molÃ©cule",
             "constituant"
         ]
     )
@@ -333,14 +338,14 @@ def identifier_element(
         "nom_identifie": nom_identifie,
         "type": type_element,
         "synonymes": [],
-        "statut": "documenté",
+        "statut": "documentÃ©",
         "colonne_identification": colonne_nom,
         "resultats_base": resultats
     }
 
 
 # =========================================================
-# 7. MASSE MOLÉCULAIRE
+# 7. MASSE MOLÃ‰CULAIRE
 # =========================================================
 
 MASSES_ATOMIQUES = {
@@ -373,7 +378,7 @@ def calculer_masse_molaire(
     formule
 ):
     """
-    Calcule la masse molaire à partir d'une formule brute.
+    Calcule la masse molaire Ã  partir d'une formule brute.
 
     Exemple :
         C8H9NO2
@@ -470,7 +475,7 @@ def extraire_structure(
             "masse molaire",
             "molecular weight",
             "molecular_weight",
-            "poids moléculaire"
+            "poids molÃ©culaire"
         ]
     )
 
@@ -505,8 +510,8 @@ def extraire_structure(
     if inchi:
         structure["inchi"] = inchi
 
-    # Si la masse n'est pas documentée,
-    # SENTOX tente un calcul à partir de la formule.
+    # Si la masse n'est pas documentÃ©e,
+    # SENTOX tente un calcul Ã  partir de la formule.
 
     if (
         structure["masse_molaire"] is None
@@ -523,7 +528,7 @@ def extraire_structure(
 
             structure[
                 "masse_molaire_statut"
-            ] = "calculé"
+            ] = "calculÃ©"
 
     return structure
 
@@ -536,10 +541,10 @@ def analyser_structure_2d(
     smiles
 ):
     """
-    Prépare la visualisation 2D.
+    PrÃ©pare la visualisation 2D.
 
-    Le rendu graphique pourra être connecté à RDKit
-    lorsque la bibliothèque sera disponible.
+    Le rendu graphique pourra Ãªtre connectÃ© Ã  RDKit
+    lorsque la bibliothÃ¨que sera disponible.
     """
 
     if not smiles:
@@ -558,10 +563,10 @@ def analyser_structure_2d(
         "smiles": smiles,
 
         "mode":
-            "structure moléculaire 2D",
+            "structure molÃ©culaire 2D",
 
         "moteur":
-            "RDKit recommandé pour le rendu graphique"
+            "RDKit recommandÃ© pour le rendu graphique"
     }
 
 
@@ -573,9 +578,9 @@ def analyser_structure_3d(
     smiles
 ):
     """
-    Prépare la structure 3D.
+    PrÃ©pare la structure 3D.
 
-    Une vraie géométrie 3D nécessite un moteur
+    Une vraie gÃ©omÃ©trie 3D nÃ©cessite un moteur
     de chimio-informatique.
     """
 
@@ -593,12 +598,12 @@ def analyser_structure_3d(
 
     return {
 
-        "statut": "à générer",
+        "statut": "Ã  gÃ©nÃ©rer",
 
         "smiles": smiles,
 
         "mode":
-            "structure moléculaire 3D",
+            "structure molÃ©culaire 3D",
 
         "moteur":
             "RDKit / moteur 3D"
@@ -606,14 +611,14 @@ def analyser_structure_3d(
 
 
 # =========================================================
-# 11. DESCRIPTEURS MOLÉCULAIRES SIMPLES
+# 11. DESCRIPTEURS MOLÃ‰CULAIRES SIMPLES
 # =========================================================
 
 def calculer_descripteurs_simples(
     formule
 ):
     """
-    Calcule quelques paramètres simples à partir
+    Calcule quelques paramÃ¨tres simples Ã  partir
     de la formule brute.
     """
 
@@ -673,7 +678,7 @@ def calculer_descripteurs_simples(
 
 
 # =========================================================
-# 12. POSSIBILITÉ DE LIAISON
+# 12. POSSIBILITÃ‰ DE LIAISON
 # =========================================================
 
 def analyser_possibilite_liaison(
@@ -681,17 +686,17 @@ def analyser_possibilite_liaison(
     molecule_b
 ):
     """
-    Analyse préliminaire de possibilité de liaison.
+    Analyse prÃ©liminaire de possibilitÃ© de liaison.
 
     ATTENTION :
-    cette fonction ne constitue PAS un docking moléculaire.
+    cette fonction ne constitue PAS un docking molÃ©culaire.
 
-    Elle prépare la structure pour des analyses futures :
-    - similarité moléculaire
+    Elle prÃ©pare la structure pour des analyses futures :
+    - similaritÃ© molÃ©culaire
     - pharmacophore
     - docking
-    - ligand-récepteur
-    - interactions protéine-ligand
+    - ligand-rÃ©cepteur
+    - interactions protÃ©ine-ligand
     """
 
     if not molecule_a or not molecule_b:
@@ -726,19 +731,19 @@ def analyser_possibilite_liaison(
             "confiance": None,
 
             "message":
-                "SMILES des deux molécules nécessaires"
+                "SMILES des deux molÃ©cules nÃ©cessaires"
         }
 
-    # Pour l'instant, SENTOX indique que les molécules
-    # sont prêtes pour une analyse de liaison.
+    # Pour l'instant, SENTOX indique que les molÃ©cules
+    # sont prÃªtes pour une analyse de liaison.
 
     return {
 
         "statut":
-            "prêt pour prédiction",
+            "prÃªt pour prÃ©diction",
 
         "resultat":
-            "Analyse structurale à effectuer",
+            "Analyse structurale Ã  effectuer",
 
         "molecule_a":
             smiles_a,
@@ -748,13 +753,13 @@ def analyser_possibilite_liaison(
 
         "methodes_prevues": [
 
-            "similarité moléculaire",
+            "similaritÃ© molÃ©culaire",
 
             "pharmacophore",
 
-            "docking moléculaire",
+            "docking molÃ©culaire",
 
-            "interaction ligand-récepteur"
+            "interaction ligand-rÃ©cepteur"
         ],
 
         "confiance":
@@ -840,7 +845,7 @@ def analyser_pharmacologie(
     ):
         pharmacologie[
             "statut"
-        ] = "documenté"
+        ] = "documentÃ©"
 
     return pharmacologie
 
@@ -853,7 +858,8 @@ def analyser_toxicologie(
     resultats_base
 ):
     """
-    Recherche les données toxicologiques documentées.
+    Recherche les données toxicologiques documentées
+    dans la base SENTOX et dans la base toxicologique par CID.
     """
 
     toxicologie = {
@@ -866,6 +872,8 @@ def analyser_toxicologie(
 
         "dl50":
             resultat_sentox(),
+
+        "dl50_observations": [],
 
         "noael":
             resultat_sentox(),
@@ -880,6 +888,91 @@ def analyser_toxicologie(
         return toxicologie
 
     donnees = resultats_base[0]
+
+    # -------------------------------------------------
+    # 1. Recherche du CID
+    # -------------------------------------------------
+
+    cid = donnees.get("CID")
+
+    # -------------------------------------------------
+    # 2. Recherche toxicologique par CID
+    # -------------------------------------------------
+
+    if cid:
+
+        donnees_tox = rechercher_toxicologie(cid)
+
+        if donnees_tox:
+
+            toxicologie[
+                "dl50_observations"
+            ] = [
+                {
+                    "valeur": x.get("Valeur"),
+                    "unite": x.get("Unite"),
+                    "espece": x.get("Espece"),
+                    "voie_exposition": x.get(
+                        "Voie_exposition"
+                    ),
+                    "type_exposition": x.get(
+                        "Type_exposition"
+                    ),
+                    "duree": x.get("Duree"),
+                    "source": x.get("Source"),
+                    "reference": x.get("Reference"),
+                    "qualite_donnee": x.get(
+                        "Qualite_donnee"
+                    ),
+                    "statut": x.get("Statut")
+                }
+                for x in donnees_tox
+                if str(x.get("Endpoint", "")).upper()
+                == "LD50"
+            ]
+
+            # -------------------------------------------------
+            # Première donnée orale utilisée comme valeur
+            # principale lorsqu'elle est disponible.
+            # Les autres observations restent conservées.
+            # -------------------------------------------------
+
+            observations_orales = [
+                x for x in toxicologie[
+                    "dl50_observations"
+                ]
+                if str(
+                    x.get("voie_exposition", "")
+                ).lower() == "orale"
+            ]
+
+            if observations_orales:
+
+                principale = observations_orales[0]
+
+                toxicologie[
+                    "dl50"
+                ] = documente(
+                    principale.get("valeur"),
+                    principale.get("source")
+                )
+
+            elif toxicologie["dl50_observations"]:
+
+                principale = toxicologie[
+                    "dl50_observations"
+                ][0]
+
+                toxicologie[
+                    "dl50"
+                ] = documente(
+                    principale.get("valeur"),
+                    principale.get("source")
+                )
+
+    # -------------------------------------------------
+    # 3. Ancienne recherche dans les données de la ligne
+    # -------------------------------------------------
 
     dl50, source_dl50 = extraire_valeur(
         donnees,
@@ -907,7 +1000,15 @@ def analyser_toxicologie(
         ]
     )
 
-    if dl50:
+    # -------------------------------------------------
+    # 4. Utiliser l'ancienne LD50 seulement si
+    #    aucune donnée CID n'a été trouvée.
+    # -------------------------------------------------
+
+    if (
+        dl50
+        and not toxicologie["dl50_observations"]
+    ):
 
         toxicologie[
             "dl50"
@@ -945,10 +1046,11 @@ def analyser_toxicologie(
 # =========================================================
 
 def analyser_adme(
-    resultats_base
+    resultats_base,
+    smiles=None
 ):
     """
-    Recherche les paramètres ADME disponibles.
+    Recherche les paramÃ¨tres ADME disponibles.
     """
 
     adme = {
@@ -963,7 +1065,10 @@ def analyser_adme(
             resultat_sentox(),
 
         "excretion":
-            resultat_sentox()
+            resultat_sentox(),
+
+        "structure_rdkit":
+            calculer_adme_structure(smiles)
     }
 
     if not resultats_base:
@@ -988,7 +1093,7 @@ def analyser_adme(
 
         "excretion": [
             "excretion",
-            "excrétion"
+            "excrÃ©tion"
         ]
     }
 
@@ -1010,17 +1115,17 @@ def analyser_adme(
 
 
 # =========================================================
-# 16. SCORE DE RISQUE PRÉLIMINAIRE
+# 16. SCORE DE RISQUE PRÃ‰LIMINAIRE
 # =========================================================
 
 def calculer_score_risque(
     analyse
 ):
     """
-    Produit un score préliminaire uniquement à partir
-    des données disponibles.
+    Produit un score prÃ©liminaire uniquement Ã  partir
+    des donnÃ©es disponibles.
 
-    Ce score n'est PAS une classification réglementaire.
+    Ce score n'est PAS une classification rÃ©glementaire.
     """
 
     score = 0
@@ -1084,7 +1189,7 @@ def calculer_score_risque(
         if any(
             mot in texte
             for mot in [
-                "élevée",
+                "Ã©levÃ©e",
                 "elevee",
                 "high",
                 "toxique"
@@ -1095,15 +1200,15 @@ def calculer_score_risque(
 
     if score >= 4:
 
-        niveau = "élevé"
+        niveau = "Ã©levÃ©"
 
     elif score >= 2:
 
-        niveau = "modéré"
+        niveau = "modÃ©rÃ©"
 
     else:
 
-        niveau = "faible / données limitées"
+        niveau = "faible / donnÃ©es limitÃ©es"
 
     return {
 
@@ -1111,18 +1216,18 @@ def calculer_score_risque(
 
         "niveau": niveau,
 
-        "statut": "calculé",
+        "statut": "calculÃ©",
 
         "source":
-            "Algorithme préliminaire SENTOX",
+            "Algorithme prÃ©liminaire SENTOX",
 
         "avertissement":
-            "Ce score ne remplace pas une évaluation toxicologique réglementaire."
+            "Ce score ne remplace pas une Ã©valuation toxicologique rÃ©glementaire."
     }
 
 
 # =========================================================
-# 17. CRÉATION DE L'ANALYSE
+# 17. CRÃ‰ATION DE L'ANALYSE
 # =========================================================
 
 def creer_analyse_element(
@@ -1130,7 +1235,7 @@ def creer_analyse_element(
     type_element="auto"
 ):
     """
-    Crée la structure complète d'analyse.
+    CrÃ©e la structure complÃ¨te d'analyse.
     """
 
     return {
@@ -1252,8 +1357,8 @@ def creer_analyse_element(
 
 def analyser_constituants(resultats_base):
     """
-    Extrait les constituants associés à un élément
-    à partir de tous les résultats de la base SENTOX.
+    Extrait les constituants associÃ©s Ã  un Ã©lÃ©ment
+    Ã  partir de tous les rÃ©sultats de la base SENTOX.
     """
 
     constituants = []
@@ -1270,7 +1375,7 @@ def analyser_constituants(resultats_base):
                 "nom constituant",
                 "compound",
                 "molecule",
-                "molécule"
+                "molÃ©cule"
             ]
         )
 
@@ -1289,7 +1394,7 @@ def analyser_constituants(resultats_base):
         partie, _ = extraire_valeur(
             donnees,
             [
-                "partie utilisée",
+                "partie utilisÃ©e",
                 "partie",
                 "part used"
             ]
@@ -1332,18 +1437,39 @@ def analyser_constituants(resultats_base):
 
     return constituants
 
-
 # =========================================================
 # 18. ANALYSE INDIVIDUELLE
 # =========================================================
 
 def analyser_element(
     nom,
-    type_element="auto"
+    type_element="auto",
+    concentration_mg_g=2.0,
+    quantite_g_jour=10.0,
+    poids_kg=70.0,
+    frequence=1.0
 ):
     """
     Fonction principale du moteur SENTOX.
+
+    Ordre d'analyse :
+    1. Identification
+    2. Constituants
+    3. Pharmacologie
+    4. Toxicologie
+    5. Structure moléculaire
+    6. ADME structurel RDKit
+    7. Structure 2D
+    8. Structure 3D
+    9. Descripteurs moléculaires
+    10. Score de risque
+    11. Sources
+    12. Conclusion
     """
+
+    # -----------------------------------------------------
+    # CREATION DE LA STRUCTURE D'ANALYSE
+    # -----------------------------------------------------
 
     analyse = creer_analyse_element(
         nom,
@@ -1367,6 +1493,11 @@ def analyser_element(
         "resultats_base",
         []
     )
+
+    # Récupération du CID depuis la base constituants
+    if resultats_base:
+        identification["CID"] = resultats_base[0].get("CID")
+
     # -----------------------------------------------------
     # CONSTITUANTS
     # -----------------------------------------------------
@@ -1376,6 +1507,7 @@ def analyser_element(
     ] = analyser_constituants(
         resultats_base
     )
+
     # -----------------------------------------------------
     # PHARMACOLOGIE
     # -----------------------------------------------------
@@ -1396,8 +1528,28 @@ def analyser_element(
         resultats_base
     )
 
-       # -----------------------------------------------------
-    # STRUCTURE MOLÉCULAIRE
+    # -----------------------------------------------------
+    # EVALUATION MOE / RQ
+    # La DL50 reste un indicateur de toxicite aigue.
+    # Elle n'est pas utilisee automatiquement comme
+    # reference pour la MOE ou le RQ.
+
+    evaluation_risque = {
+        "statut": "reference_toxicologique_manquante",
+        "exposition_humaine": None,
+        "MOE": None,
+        "RQ": None,
+        "DL50": analyse.get("toxicologie", {}).get("dl50"),
+        "avertissement": (
+            "MOE et RQ non calcules : une reference "
+            "toxicologique adaptee et documentee est requise."
+        )
+    }
+
+    analyse["evaluation_risque"] = evaluation_risque
+
+    # -----------------------------------------------------
+    # STRUCTURE MOLECULAIRE
     # -----------------------------------------------------
 
     structure = extraire_structure(
@@ -1413,8 +1565,6 @@ def analyser_element(
     # -----------------------------------------------------
     # ADME
     # -----------------------------------------------------
-    # Le SMILES extrait de la structure est transmis
-    # au moteur ADME structurel RDKit.
 
     analyse[
         "adme"
@@ -1422,6 +1572,7 @@ def analyser_element(
         resultats_base,
         structure.get("smiles")
     )
+
     # -----------------------------------------------------
     # STRUCTURE 2D
     # -----------------------------------------------------
@@ -1447,7 +1598,7 @@ def analyser_element(
     )
 
     # -----------------------------------------------------
-    # DESCRIPTEURS
+    # DESCRIPTEURS MOLECULAIRES
     # -----------------------------------------------------
 
     analyse[
@@ -1526,7 +1677,7 @@ def analyser_element(
 
 
 # =========================================================
-# 19. ANALYSE D'UN MÉLANGE
+# 19. ANALYSE D'UN MÃ‰LANGE
 # =========================================================
 
 def analyser_melange(
@@ -1626,28 +1777,28 @@ def analyser_melange(
                     ],
 
                 "interaction":
-                    "À évaluer",
+                    "Ã€ Ã©valuer",
 
                 "potentialisation":
-                    "À évaluer",
+                    "Ã€ Ã©valuer",
 
                 "antagonisme":
-                    "À évaluer",
+                    "Ã€ Ã©valuer",
 
                 "inhibition":
-                    "À évaluer",
+                    "Ã€ Ã©valuer",
 
                 "competition":
-                    "À évaluer",
+                    "Ã€ Ã©valuer",
 
                 "synergie":
-                    "À évaluer",
+                    "Ã€ Ã©valuer",
 
                 "liaison_moleculaire":
                     liaison,
 
                 "statut":
-                    "prédit"
+                    "prÃ©dit"
             })
 
     # -----------------------------------------------------
@@ -1679,15 +1830,15 @@ def analyser_melange(
 
     if score_global >= 7:
 
-        niveau_global = "élevé"
+        niveau_global = "Ã©levÃ©"
 
     elif score_global >= 3:
 
-        niveau_global = "modéré"
+        niveau_global = "modÃ©rÃ©"
 
     else:
 
-        niveau_global = "faible / données limitées"
+        niveau_global = "faible / donnÃ©es limitÃ©es"
 
     # -----------------------------------------------------
     # RETOUR
@@ -1704,16 +1855,16 @@ def analyser_melange(
         "adme": {
 
             "absorption":
-                "à évaluer",
+                "Ã  Ã©valuer",
 
             "distribution":
-                "à évaluer",
+                "Ã  Ã©valuer",
 
             "metabolisme":
-                "à évaluer",
+                "Ã  Ã©valuer",
 
             "excretion":
-                "à évaluer"
+                "Ã  Ã©valuer"
         },
 
         "toxicologie": {
@@ -1725,18 +1876,18 @@ def analyser_melange(
                 score_global,
 
             "statut":
-                "calculé",
+                "calculÃ©",
 
             "message":
-                "Score préliminaire SENTOX"
+                "Score prÃ©liminaire SENTOX"
         },
 
         "conclusion": (
-            "SENTOX a analysé les éléments du mélange "
-            "et séparé les données documentées, calculées "
-            "et les résultats destinés à la prédiction. "
-            "Les interactions moléculaires nécessitent "
-            "des modèles spécialisés pour être confirmées."
+            "SENTOX a analysÃ© les Ã©lÃ©ments du mÃ©lange "
+            "et sÃ©parÃ© les donnÃ©es documentÃ©es, calculÃ©es "
+            "et les rÃ©sultats destinÃ©s Ã  la prÃ©diction. "
+            "Les interactions molÃ©culaires nÃ©cessitent "
+            "des modÃ¨les spÃ©cialisÃ©s pour Ãªtre confirmÃ©es."
         )
     }
 
@@ -1750,7 +1901,7 @@ def exporter_json(
     fichier="sentox_resultat.json"
 ):
     """
-    Exporte un résultat SENTOX au format JSON.
+    Exporte un rÃ©sultat SENTOX au format JSON.
     """
 
     with open(
@@ -1782,7 +1933,7 @@ if __name__ == "__main__":
     print()
 
     test = analyser_element(
-        "paracétamol",
+        "paracÃ©tamol",
         "medicament"
     )
 
@@ -1802,7 +1953,7 @@ if __name__ == "__main__":
 FICHIER_BASE_MOLECULES = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
     "data",
-    "sentox_database_2000_enriched_noms.csv"
+    "sentox_database_2000_enriched.csv"
 )
 
 
@@ -1827,7 +1978,7 @@ def normaliser_recherche(texte):
 
 
 def rechercher_molecule_sentox(nom_recherche):
-    """Recherche une molécule dans la base SENTOX 2000."""
+    """Recherche une molÃ©cule dans la base SENTOX 2000."""
 
     if not nom_recherche:
         return None
@@ -1910,13 +2061,13 @@ FICHIERS_BASES_SENTOX = [
     ),
     os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-        "data", "sentox_database_2000_enriched_noms.csv"
+        "data", "sentox_database_2000_enriched.csv"
     )
 ]
 
 
 def rechercher_molecule_multibase(nom_recherche):
-    """Recherche une molécule dans toutes les bases SENTOX."""
+    """Recherche une molÃ©cule dans toutes les bases SENTOX."""
 
     recherche = normaliser_recherche(nom_recherche)
 
@@ -2000,13 +2151,13 @@ def rechercher_molecule_multibase(nom_recherche):
 
 def predire_ld50_qsar(smiles):
     """
-    Prédit la LD50 orale à partir d'un SMILES.
+    PrÃ©dit la LD50 orale Ã  partir d'un SMILES.
 
     IMPORTANT :
-    Cette fonction utilise le modèle QSAR expérimental
+    Cette fonction utilise le modÃ¨le QSAR expÃ©rimental
     actuellement disponible dans SENTOX.
-    La prédiction ne constitue pas une preuve expérimentale
-    ni une donnée toxicologique réglementaire.
+    La prÃ©diction ne constitue pas une preuve expÃ©rimentale
+    ni une donnÃ©e toxicologique rÃ©glementaire.
     """
 
     if not smiles:
@@ -2032,16 +2183,16 @@ def predire_ld50_qsar(smiles):
     ):
         return {
             "statut": "non disponible",
-            "raison": "SMILES invalide ou descripteurs impossibles à calculer"
+            "raison": "SMILES invalide ou descripteurs impossibles Ã  calculer"
         }
 
-    # Chargement du modèle
+    # Chargement du modÃ¨le
     modele_path = BASE_DIR / "models" / "qsar_model.joblib"
 
     if not modele_path.exists():
         return {
             "statut": "non disponible",
-            "raison": "Modèle QSAR introuvable"
+            "raison": "ModÃ¨le QSAR introuvable"
         }
 
     modele_data = joblib.load(modele_path)
@@ -2049,13 +2200,13 @@ def predire_ld50_qsar(smiles):
     modele = modele_data["model"]
     features = modele_data["features"]
 
-    # Construction du vecteur de prédiction
+    # Construction du vecteur de prÃ©diction
     X = pd.DataFrame(
         [[descripteurs[f] for f in features]],
         columns=features
     )
 
-    # Prédiction
+    # PrÃ©diction
     prediction_log = float(
         modele.predict(X)[0]
     )
@@ -2065,7 +2216,7 @@ def predire_ld50_qsar(smiles):
     )
 
     return {
-        "statut": "PRÉDIT",
+        "statut": "PRÃ‰DIT",
         "valeur": round(prediction_ld50, 3),
         "unite": "mg/kg",
         "log10_LD50": round(prediction_log, 4),
@@ -2080,9 +2231,12 @@ def predire_ld50_qsar(smiles):
         ),
         "descripteurs": descripteurs,
         "commentaire": (
-            "Prédiction QSAR expérimentale/prototype. "
+            "PrÃ©diction QSAR expÃ©rimentale/prototype. "
             "Ne constitue pas une preuve toxicologique "
-            "expérimentale ou réglementaire."
+            "expÃ©rimentale ou rÃ©glementaire."
         )
     }
         
+
+
+
