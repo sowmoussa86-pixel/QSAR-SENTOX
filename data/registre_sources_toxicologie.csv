@@ -1,0 +1,5 @@
+﻿substance,CID,endpoint,espece,voie,valeur,unite,reference,url,statut
+Acetone,180,LD50,Rat,Orale,5800,mg/kg,"ATSDR, Toxicological Profile for Acetone",https://www.ncbi.nlm.nih.gov/books/NBK590387/,Source repérée - étude originale à vérifier
+Acetone,180,LD50,Rat,Orale,9800,mg/kg,"European Chemicals Bureau, IUCLID Dataset, via PubChem",https://pubchem.ncbi.nlm.nih.gov/compound/180,Source secondaire repérée - à vérifier
+Acetone,180,LD50,Rat,Orale,8450,mg/kg,"European Chemicals Bureau, IUCLID Dataset, via PubChem",https://pubchem.ncbi.nlm.nih.gov/compound/180,Conversion publiée - à vérifier
+Benzene,241,LD50,Rat,Orale,3306,mg/kg,"Sax, Dangerous Properties of Industrial Materials, 11e éd., 2004, p. 360",https://pubchem.ncbi.nlm.nih.gov/compound/241,Référence bibliographique repérée - à vérifier

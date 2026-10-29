@@ -1,0 +1,1749 @@
+diff --git a/data/sentox_toxicology_database.csv b/data/sentox_toxicology_database.csv
+index 5993d9b..d615922 100644
+--- a/data/sentox_toxicology_database.csv
++++ b/data/sentox_toxicology_database.csv
+@@ -1,2 +1,5 @@
+ CID,Nom,SMILES,Endpoint,Valeur,Unite,Espece,Voie_exposition,Type_exposition,Duree,Source,Reference,Qualite_donnee,Statut
+ 887,Methanol,CO,LD50,5628,mg/kg,Non précisée,orale,aiguë,Non précisée,PubChem/HSDB,Prototype historique,À vérifier,Documentée
++5280343,Quercétine,C1=CC(=C(C=C1C2=C(C(=O)C3=C(C=C(C=C3O2)O)O)O)O)O,LD50,161,mg/kg,Rat,orale,aiguë,Non précisée,HSDB via PubChem,Sax Dangerous Properties of Industrial Materials 11th ed.,Source secondaire,Documentée
++5280343,Quercétine,C1=CC(=C(C=C1C2=C(C(=O)C3=C(C=C(C=C3O2)O)O)O)O)O,LD50,160,mg/kg,Mouse,orale,aiguë,Non précisée,HSDB via PubChem,IARC Monographs,Source secondaire,Documentée
++5280343,Quercétine,C1=CC(=C(C=C1C2=C(C(=O)C3=C(C=C(C=C3O2)O)O)O)O)O,LD50,18,mg/kg,Mouse,IV,aiguë,Non précisée,HSDB via PubChem,Sax Dangerous Properties of Industrial Materials 11th ed.,Source secondaire,Documentée
+diff --git a/extrapolation/hed_engine.py b/extrapolation/hed_engine.py
+index b1cf3a5..a061a09 100644
+--- a/extrapolation/hed_engine.py
++++ b/extrapolation/hed_engine.py
+@@ -1,3 +1,4 @@
++import math
+ import pandas as pd
+ from pathlib import Path
+ 
+@@ -93,6 +94,7 @@ def obtenir_km(espece):
+     return km
+ 
+ 
++
+ def valider_entrees(dose_animale, espece):
+     """
+     Vérifie que les données d'entrée sont valides.
+@@ -100,9 +102,14 @@ def valider_entrees(dose_animale, espece):
+ 
+     try:
+         dose = float(dose_animale)
+-    except (TypeError, ValueError):
++    except (TypeError, ValueError, OverflowError):
++        raise ValueError(
++            "La dose animale doit être un nombre fini."
++        )
++
++    if not math.isfinite(dose):
+         raise ValueError(
+-            "La dose animale doit être un nombre."
++            "La dose animale doit être un nombre fini."
+         )
+ 
+     if dose <= 0:
+@@ -121,6 +128,7 @@ def valider_entrees(dose_animale, espece):
+     return True
+ 
+ 
++
+ def calculer_hed(dose_animale, espece):
+     """
+     Calcule la dose équivalente humaine (HED).
+@@ -154,33 +162,23 @@ def calculer_hed(dose_animale, espece):
+     }
+ 
+ 
++
+ def obtenir_facteur_securite(contexte="MRSD_initiale"):
+     """
+     Retourne le facteur de sécurité de référence
+     pour le contexte demandé.
+-
+-    Attention :
+-        Ce facteur n'est pas une règle universelle.
+-        Il doit être interprété selon le contexte
+-        réglementaire et toxicologique approprié.
+     """
+ 
+     if not isinstance(contexte, str) or not contexte.strip():
+-        raise ValueError(
+-            "Le contexte doit être renseigné."
+-        )
++        raise ValueError("Le contexte doit être renseigné.")
+ 
+     df = charger_references()
+-
+     contexte_normalise = contexte.strip().lower()
+ 
+     ligne = df[
+-        (df["Parametre"].astype(str).str.lower() == "facteur_securite")
++        (df["Parametre"].astype(str).str.strip().str.lower() == "facteur_securite")
+         & (
+-            df["Contexte"]
+-            .astype(str)
+-            .str.strip()
+-            .str.lower()
++            df["Contexte"].astype(str).str.strip().str.lower()
+             == contexte_normalise
+         )
+     ]
+@@ -194,19 +192,20 @@ def obtenir_facteur_securite(contexte="MRSD_initiale"):
+ 
+     try:
+         facteur = float(valeur)
+-    except (TypeError, ValueError):
++    except (TypeError, ValueError, OverflowError):
+         raise ValueError(
+             f"Facteur de sécurité invalide pour le contexte : {contexte}"
+         )
+ 
+-    if facteur <= 0:
++    if not math.isfinite(facteur) or facteur <= 0:
+         raise ValueError(
+-            "Le facteur de sécurité doit être supérieur à zéro."
++            "Le facteur de sécurité doit être un nombre fini strictement positif."
+         )
+ 
+     return facteur
+ 
+ 
++
+ def calculer_dose_reference(
+     dose_animale,
+     espece,
+diff --git a/risk/risk_engine.py b/risk/risk_engine.py
+index f9c2021..a168663 100644
+--- a/risk/risk_engine.py
++++ b/risk/risk_engine.py
+@@ -2,27 +2,34 @@
+ # SENTOX - MOTEUR D'EVALUATION DU RISQUE V1
+ # ============================================================
+ 
++import math
+ 
+ def valider_valeur(valeur, nom):
+     """
+-    Vérifie qu'une valeur est numérique et positive.
++    Vérifie qu'une valeur est numérique, finie et positive.
+     """
+ 
+     try:
+         valeur = float(valeur)
+-    except (TypeError, ValueError):
++    except (TypeError, ValueError, OverflowError):
+         raise ValueError(
+-            f"{nom} doit être numérique."
++            f"{nom} doit être un nombre fini."
++        )
++
++    if not math.isfinite(valeur):
++        raise ValueError(
++            f"{nom} doit être un nombre fini."
+         )
+ 
+     if valeur <= 0:
+         raise ValueError(
+-            f"{nom} doit être supérieure à zéro."
++            f"{nom} doit être strictement supérieure à zéro."
+         )
+ 
+     return valeur
+ 
+ 
++
+ def calculer_moe(point_depart, exposition_humaine):
+     """
+     Calcule la marge d'exposition (MOE).
+diff --git a/web/app.py b/web/app.py
+index 1207b50..ecc189a 100644
+--- a/web/app.py
++++ b/web/app.py
+@@ -1,8 +1,8 @@
+-from flask import Flask, render_template, request
++from flask import Flask, render_template, render_template_string, request
+ import pandas as pd
+ import os
+ import sys
+-
++from qsar.product_resolver import resoudre_produit
+ # =========================================================
+ # SENTOX — CONFIGURATION
+ # =========================================================
+@@ -16,6 +16,10 @@ QSAR_DIR = os.path.join(
+     "qsar"
+ )
+ 
++PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
++if PROJECT_DIR not in sys.path:
++    sys.path.insert(0, PROJECT_DIR)
++
+ if QSAR_DIR not in sys.path:
+     sys.path.insert(0, QSAR_DIR)
+ 
+@@ -45,6 +49,8 @@ from sentox_evidence import (
+     creer_fiche_scientifique
+ )
+ 
++from sentox_pubchem import rechercher_pubchem
++
+ from sentox_3d import (
+     analyser_melange_3d
+ )
+@@ -217,6 +223,10 @@ def analyse():
+         ""
+     ).strip()
+ 
++    concentration_mg_g = float(request.form.get("concentration_mg_g", 2.0))
++    quantite_g_jour = float(request.form.get("quantite_g_jour", 10.0))
++    poids_kg = float(request.form.get("poids_kg", 70.0))
++    frequence = float(request.form.get("frequence", 1.0))
+     type_element = request.form.get(
+         "type",
+         "auto"
+@@ -237,7 +247,11 @@ def analyse():
+ 
+         element,
+ 
+-        type_element
++        type_element,
++        concentration_mg_g,
++        quantite_g_jour,
++        poids_kg,
++        frequence
+     )
+ 
+     # -----------------------------------------------------
+@@ -569,6 +583,315 @@ def analyse_melange():
+         mode="melange"
+     )
+ 
++# =========================================================
++# PAGE TABLEAU DE BORD SENTOX
++# =========================================================
++
++@app.route("/dashboard")
++def dashboard():
++    return render_template("modules/dashboard.html")
++
++# =========================================================
++# MODULES SENTOX : ROUTES DE NAVIGATION
++# =========================================================
++
++from flask import render_template_string
++
++MODULES_SENTOX = {
++    "plantes": {
++        "titre": "Plantes médicinales",
++        "description": "Recherche et exploration des plantes médicinales.",
++        "champs": ["Nom de la plante", "Nom scientifique", "Partie utilisée"]
++    },
++   
++    "molecules": {
++        "titre": "Molécules & QSAR",
++        "description": "Recherche par nom commercial, nom chimique, substance active, SMILES ou identifiant PubChem.",
++        "champs": [
++            "Nom commercial ou nom connu (obligatoire)",
++            "Nom de la substance active (facultatif)",
++            "SMILES (facultatif)",
++            "Identifiant PubChem (facultatif)"
++        ]
++    },
++
++    "melanges": {
++        "titre": "Mélanges & interactions",
++        "description": "Étude des préparations contenant plusieurs plantes ou substances.",
++        "champs": ["Nom du mélange", "Composition", "Proportions"]
++    },
++    "toxicologie": {
++        "titre": "Toxicologie & exposition",
++        "description": "Consultation des données toxicologiques et d'exposition.",
++        "champs": ["Substance", "Dose", "Voie d'exposition"]
++    },
++    "preuves": {
++        "titre": "Preuves scientifiques",
++        "description": "Consultation des sources et du niveau de preuve disponible.",
++        "champs": ["Substance ou plante", "Référence scientifique"]
++    },
++    "qhse_rg": {
++        "titre": "QHSE & Réglementation",
++        "description": (
++            "Inventaire chimique, évaluation des risques, "
++            "FDS, prévention et veille réglementaire."
++        ),
++        "champs": [
++            "Nom du produit chimique",
++            "Numéro CAS",
++            "Classification de danger connue",
++            "Voie d’exposition",
++            "Mesures de prévention"
++        ]
++    },
++    "rapports": {
++        "titre": "Rapports d'expertise",
++        "description": "Préparation des analyses et synthèses scientifiques.",
++        "champs": ["Nom de l'analyse", "Nom de l'expert"]
++    }
++}
++
++
++MODELE_MODULE_SENTOX = """
++<!DOCTYPE html>
++<html lang="fr">
++<head>
++<meta charset="UTF-8">
++<meta name="viewport" content="width=device-width, initial-scale=1">
++<title>{{ module.titre }} - SENTOX</title>
++<style>
++body{margin:0;font-family:Arial,sans-serif;background:#f1f5f9;color:#1e293b}
++header{background:linear-gradient(135deg,#123b70,#087eaa);color:white;padding:22px}
++main{max-width:950px;margin:25px auto;padding:18px}
++.carte{background:white;padding:25px;border-radius:15px;box-shadow:0 3px 15px #0001}
++h1,h2{color:#155e91}
++label{display:block;margin-top:16px;font-weight:bold}
++input,select,textarea{width:100%;padding:11px;margin-top:7px;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:7px}
++button,a{display:inline-block;margin-top:20px;padding:11px 16px;border-radius:7px}
++button{background:#087eaa;color:white;border:0;cursor:pointer}
++a{color:#087eaa}
++.note{background:#fff7db;padding:14px;border-radius:8px;margin-top:20px;line-height:1.5}
++.resultat{background:#e8f5ee;padding:15px;border-radius:8px;margin-top:20px;overflow-wrap:anywhere}
++.erreur{background:#fdecec;padding:12px;border-radius:8px;margin-top:15px}
++</style>
++</head>
++<body>
++<header><strong>SENTOX</strong> — Espace scientifique et QHSE</header>
++<main><div class="carte">
++<h1>{{ module.titre }}</h1>
++<p>{{ module.description }}</p>
++
++{% if request.path.endswith("/qhse_rg") %}
++<h2>Identification et évaluation préliminaire</h2>
++<p>Commence par le nom indiqué sur l'emballage. Les informations inconnues peuvent rester vides.</p>
++<form method="post">
++<label>Nom du produit ou de la substance *</label>
++<input name="produit" value="{{ request.form.get('produit', '') }}" required placeholder="Ex. eau de Javel, pesticide, acide chlorhydrique">
++
++<label>Fabricant ou marque (facultatif)</label>
++<input name="fabricant" value="{{ request.form.get('fabricant', '') }}" placeholder="Nom figurant sur l'emballage">
++
++<label>Numéro CAS (si connu)</label>
++<input name="cas" value="{{ request.form.get('cas', '') }}" placeholder="Laisser vide si inconnu">
++
++<label>Classification de danger</label>
++<select name="danger">
++<option value="">Je ne sais pas / à vérifier</option>
++<option value="indique">Danger indiqué sur l'étiquette ou la FDS</option>
++<option value="aucune">Aucune classification trouvée — à vérifier</option>
++</select>
++
++<label>Voie d'exposition possible dans votre activité</label>
++<select name="exposition">
++<option value="">Je ne sais pas / à évaluer</option>
++<option value="inhalation">Inhalation</option>
++<option value="peau">Contact avec la peau</option>
++<option value="yeux">Contact avec les yeux</option>
++<option value="ingestion">Ingestion accidentelle</option>
++<option value="plusieurs">Plusieurs voies possibles</option>
++</select>
++
++<label>Mesures de prévention déjà en place (facultatif)</label>
++<textarea name="prevention" rows="3" placeholder="Ex. ventilation, gants adaptés, stockage sécurisé… Laisser vide si inconnu.">{{ request.form.get('prevention', '') }}</textarea>
++
++<label>Fiche de données de sécurité disponible ?</label>
++<select name="fds">
++<option value="inconnue">Je ne sais pas</option>
++<option value="oui">Oui</option>
++<option value="non">Non</option>
++</select>
++
++<button type="submit">Évaluer les informations disponibles</button>
++</form>
++
++{% if resultat %}
++<div class="resultat">
++<h2>Résumé préliminaire</h2>
++<p><strong>Produit saisi :</strong> {{ resultat.produit }}</p>
++<p><strong>Fabricant :</strong> {{ resultat.fabricant or 'Non renseigné' }}</p>
++<p><strong>Numéro CAS :</strong> {{ resultat.cas or 'Inconnu — identification nécessaire' }}</p>
++<p><strong>Danger :</strong> {{ resultat.danger }}</p>
++<p><strong>Voie d'exposition :</strong> {{ resultat.exposition }}</p>
++<p><strong>Prévention :</strong> {{ resultat.prevention or 'Non renseignée — à définir après identification du produit et évaluation du risque' }}</p>
++<p><strong>FDS :</strong> {{ resultat.fds }}</p>
++<p><strong>Informations à compléter :</strong></p>
++<ul>
++{% for item in resultat.manquants %}
++<li>{{ item }}</li>
++{% endfor %}
++</ul>
++<strong>Statut : évaluation préliminaire, non validée.</strong>
++</div>
++{% endif %}
++
++<div class="note">
++<strong>Précaution :</strong> ce formulaire ne vérifie pas encore automatiquement les bases réglementaires et ne confirme pas l'identité du produit. Ne déduis pas l'absence de danger d'une information inconnue. Consulte l'étiquette et la FDS du fabricant avant de fixer les mesures de prévention.
++</div>
++
++{% else %}
++{% if request.path.endswith("/molecules") %}
++<form method="post">
++<label>Nom commercial ou nom connu</label>
++<input name="nom_connu" value="{{ request.form.get('nom_connu', '') }}" placeholder="Ex. Doliprane">
++<label>Nom de la substance active (facultatif)</label>
++<input name="nom_substance" value="{{ request.form.get('nom_substance', '') }}" placeholder="Ex. paracétamol">
++<label>SMILES (facultatif)</label>
++<input name="smiles" value="{{ request.form.get('smiles', '') }}" placeholder="Laisser vide si inconnu">
++<label>Identifiant PubChem (facultatif)</label>
++<input name="pubchem_cid" value="{{ request.form.get('pubchem_cid', '') }}" placeholder="Ex. 1983">
++<button type="submit">Rechercher la substance</button>
++</form>
++{% else %}
++<form method="get">
++{% for champ in module.champs %}
++<label>{{ champ }}</label>
++<input name="champ{{ loop.index }}" placeholder="Facultatif : {{ champ }}">
++{% endfor %}
++<button type="submit">Afficher les informations saisies</button>
++</form>
++{% endif %}
++
++{% if resultat %}
++{% if resultat.get('erreur') %}
++<div class="erreur">{{ resultat.get('erreur') }}</div>
++{% else %}
++<div class="resultat">
++<h2>Résultat de la recherche</h2>
++<p><strong>Statut :</strong> {{ resultat.get('statut', 'Non précisé') }}</p>
++{% if resultat.get('message') %}<p>{{ resultat.get('message') }}</p>{% endif %}
++{% for candidat in resultat.get('candidats', []) %}
++<hr><h3>{{ candidat.get('nom_pubchem') or candidat.get('nom_recherche', 'Candidat') }}</h3>
++<p><strong>CID PubChem :</strong> {{ candidat.get('cid') or 'Non disponible' }}</p>
++<p><strong>Nom IUPAC :</strong> {{ candidat.get('nom_iupac') or 'Non disponible' }}</p>
++<p><strong>Formule :</strong> {{ candidat.get('formule') or 'Non disponible' }}</p>
++<p><strong>Source :</strong> {{ candidat.get('source', 'Non précisée') }}</p>
++<p><strong>Identité :</strong> {{ candidat.get('statut_identite', 'À vérifier') }}</p>
++{% endfor %}
++{% if resultat.get('avertissement') %}<div class="note">{{ resultat.get('avertissement') }}</div>{% endif %}
++</div>
++{% endif %}
++{% endif %}
++{% endif %}
++
++<a href="/dashboard">← Retour au tableau de bord</a>
++</div></main>
++</body>
++</html>
++"""
++
++
++@app.route("/module/<nom_module>", methods=["GET", "POST"])
++def afficher_module_sentox(nom_module):
++    module = MODULES_SENTOX.get(nom_module)
++    if module is None:
++        return "Module SENTOX inconnu", 404
++
++    resultat = None
++
++    if nom_module == "qhse_rg" and request.method == "POST":
++        produit = request.form.get("produit", "").strip()
++        fabricant = request.form.get("fabricant", "").strip()
++        cas = request.form.get("cas", "").strip()
++        danger = request.form.get("danger", "").strip()
++        exposition = request.form.get("exposition", "").strip()
++        prevention = request.form.get("prevention", "").strip()
++        fds = request.form.get("fds", "inconnue").strip()
++
++        if not produit:
++            resultat = {
++                "erreur": "Saisis le nom du produit pour commencer."
++            }
++        else:
++            danger_textes = {
++                "indique": "Danger indiqué : classification à vérifier dans la FDS.",
++                "aucune": "Aucune classification trouvée : cela ne signifie pas absence de danger.",
++                "": "Inconnu : consulter l’étiquette et la FDS."
++            }
++            exposition_textes = {
++                "inhalation": "Inhalation (voie possible sélectionnée par l’utilisateur).",
++                "peau": "Contact cutané (voie possible sélectionnée par l’utilisateur).",
++                "yeux": "Contact oculaire (voie possible sélectionnée par l’utilisateur).",
++                "ingestion": "Ingestion accidentelle (voie possible sélectionnée par l’utilisateur).",
++                "plusieurs": "Plusieurs voies possibles, à évaluer selon l’activité.",
++                "": "Inconnue : évaluer les conditions réelles d’utilisation."
++            }
++            fds_textes = {
++                "oui": "Déclarée disponible par l’utilisateur ; contenu non vérifié.",
++                "non": "Déclarée indisponible ; demander la FDS au fournisseur.",
++                "inconnue": "Disponibilité inconnue."
++            }
++
++            manquants = []
++            if not cas:
++                manquants.append("Numéro CAS : identité chimique à confirmer.")
++            if danger != "indique":
++                manquants.append("Classification : vérifier les sources officielles et la FDS.")
++            if not exposition:
++                manquants.append("Voies d’exposition : évaluation à réaliser selon l’activité.")
++            if not prevention:
++                manquants.append("Prévention : à définir après identification des dangers et évaluation du risque.")
++            if fds != "oui":
++                manquants.append("FDS : obtenir la version applicable auprès du fournisseur.")
++
++            resultat = {
++                "produit": produit,
++                "fabricant": fabricant,
++                "cas": cas,
++                "danger": danger_textes.get(danger, "À vérifier dans une source fiable."),
++                "exposition": exposition_textes.get(exposition, "À évaluer."),
++                "prevention": prevention,
++                "fds": fds_textes.get(fds, "Disponibilité à confirmer."),
++                "manquants": manquants
++            }
++
++    if nom_module == "molecules" and request.method == "POST":
++        nom_connu = request.form.get("nom_connu", "").strip()
++        nom_substance = request.form.get("nom_substance", "").strip()
++        smiles = request.form.get("smiles", "").strip()
++        pubchem_cid = request.form.get("pubchem_cid", "").strip()
++
++        if not nom_connu and not nom_substance and not smiles and not pubchem_cid:
++            resultat = {
++                "erreur": "Saisis au moins un nom, un SMILES ou un CID PubChem."
++            }
++        else:
++            try:
++                resultat = resoudre_produit(
++                    nom_connu=nom_connu,
++                    nom_substance=nom_substance,
++                    smiles=smiles,
++                    pubchem_cid=pubchem_cid
++                )
++            except Exception:
++                resultat = {
++                    "erreur": "La recherche a échoué. Vérifie les données et la connexion."
++                }
++
++    return render_template_string(
++        MODELE_MODULE_SENTOX,
++        module=module,
++        resultat=resultat
++    )
+ 
+ # =========================================================
+ # LANCEMENT
+diff --git a/web/qsar/sentox_engine.py b/web/qsar/sentox_engine.py
+index 68cb79f..e476427 100644
+--- a/web/qsar/sentox_engine.py
++++ b/web/qsar/sentox_engine.py
+@@ -1,29 +1,29 @@
+ # =========================================================
+ # SENTOX ENGINE
+ # Moteur central d'analyse toxicologique, pharmacologique
+-# QSAR, ADME et interactions moléculaires
++# QSAR, ADME et interactions molÃ©culaires
+ # =========================================================
+ 
+ """
+ SENTOX ENGINE
+ 
+-Niveaux de données :
++Niveaux de donnÃ©es :
+ 
+-DOCUMENTÉ
+-    Donnée provenant d'une base ou d'une source scientifique.
++DOCUMENTÃ‰
++    DonnÃ©e provenant d'une base ou d'une source scientifique.
+ 
+-CALCULÉ
+-    Résultat obtenu à partir d'une formule déterministe.
++CALCULÃ‰
++    RÃ©sultat obtenu Ã  partir d'une formule dÃ©terministe.
+ 
+-PRÉDIT
+-    Résultat issu d'un modèle prédictif ou d'une estimation.
++PRÃ‰DIT
++    RÃ©sultat issu d'un modÃ¨le prÃ©dictif ou d'une estimation.
+ 
+ NON DISPONIBLE
+-    Aucune donnée exploitable trouvée.
++    Aucune donnÃ©e exploitable trouvÃ©e.
+ 
+ IMPORTANT
+-    Une prédiction SENTOX-QSAR ne constitue pas une preuve
+-    expérimentale.
++    Une prÃ©diction SENTOX-QSAR ne constitue pas une preuve
++    expÃ©rimentale.
+ """
+ 
+ import os
+@@ -36,6 +36,11 @@ import re
+ import math
+ import json
+ from qsar.qsar_engine import calculer_descripteurs
++from sentox_adme_rdkit import calculer_adme_structure
++from sentox_toxicology_database import rechercher_toxicologie
++from risk.risk_engine import calculer_moe
++from risk.rq_engine import calculer_rq
++from exposure.exposure_engine import calculer_exposition
+ 
+ # =========================================================
+ # 1. CONFIGURATION
+@@ -68,7 +73,7 @@ def resultat_sentox(
+     commentaire=None
+ ):
+     """
+-    Structure standardisée d'une donnée SENTOX.
++    Structure standardisÃ©e d'une donnÃ©e SENTOX.
+     """
+ 
+     return {
+@@ -89,7 +94,7 @@ def documente(
+ ):
+     return resultat_sentox(
+         valeur=valeur,
+-        statut="documenté",
++        statut="documentÃ©",
+         source=source,
+         unite=unite,
+         commentaire=commentaire
+@@ -104,7 +109,7 @@ def calcule(
+ ):
+     return resultat_sentox(
+         valeur=valeur,
+-        statut="calculé",
++        statut="calculÃ©",
+         source=source,
+         unite=unite,
+         commentaire=commentaire
+@@ -120,7 +125,7 @@ def predit(
+ ):
+     return resultat_sentox(
+         valeur=valeur,
+-        statut="prédit",
++        statut="prÃ©dit",
+         source=source,
+         confiance=confiance,
+         unite=unite,
+@@ -137,7 +142,7 @@ def charger_base():
+     Charge la base CSV si elle existe.
+ 
+     Utilisation volontairement sans pandas afin que le moteur
+-    reste facilement déployable.
++    reste facilement dÃ©ployable.
+     """
+ 
+     if not os.path.exists(FICHIER_CONSTITUANTS):
+@@ -190,9 +195,9 @@ def rechercher_element(
+     type_element="auto"
+ ):
+     """
+-    Recherche un élément dans la base SENTOX.
++    Recherche un Ã©lÃ©ment dans la base SENTOX.
+ 
+-    La recherche est effectuée dans toutes les colonnes.
++    La recherche est effectuÃ©e dans toutes les colonnes.
+     """
+ 
+     nom = str(nom).strip().lower()
+@@ -227,7 +232,7 @@ def chercher_colonne(
+     mots_cles
+ ):
+     """
+-    Cherche une colonne dont le nom contient l'un des mots-clés.
++    Cherche une colonne dont le nom contient l'un des mots-clÃ©s.
+     """
+ 
+     if not donnees:
+@@ -257,7 +262,7 @@ def extraire_valeur(
+     mots_cles
+ ):
+     """
+-    Retourne une valeur trouvée dans une ligne de base.
++    Retourne une valeur trouvÃ©e dans une ligne de base.
+     """
+ 
+     colonne = chercher_colonne(
+@@ -288,7 +293,7 @@ def identifier_element(
+     type_element="auto"
+ ):
+     """
+-    Identifie un élément à partir de la base SENTOX.
++    Identifie un Ã©lÃ©ment Ã  partir de la base SENTOX.
+     """
+ 
+     resultats = rechercher_element(
+@@ -317,7 +322,7 @@ def identifier_element(
+             "produit",
+             "substance",
+             "molecule",
+-            "molécule",
++            "molÃ©cule",
+             "constituant"
+         ]
+     )
+@@ -333,14 +338,14 @@ def identifier_element(
+         "nom_identifie": nom_identifie,
+         "type": type_element,
+         "synonymes": [],
+-        "statut": "documenté",
++        "statut": "documentÃ©",
+         "colonne_identification": colonne_nom,
+         "resultats_base": resultats
+     }
+ 
+ 
+ # =========================================================
+-# 7. MASSE MOLÉCULAIRE
++# 7. MASSE MOLÃ‰CULAIRE
+ # =========================================================
+ 
+ MASSES_ATOMIQUES = {
+@@ -373,7 +378,7 @@ def calculer_masse_molaire(
+     formule
+ ):
+     """
+-    Calcule la masse molaire à partir d'une formule brute.
++    Calcule la masse molaire Ã  partir d'une formule brute.
+ 
+     Exemple :
+         C8H9NO2
+@@ -470,7 +475,7 @@ def extraire_structure(
+             "masse molaire",
+             "molecular weight",
+             "molecular_weight",
+-            "poids moléculaire"
++            "poids molÃ©culaire"
+         ]
+     )
+ 
+@@ -505,8 +510,8 @@ def extraire_structure(
+     if inchi:
+         structure["inchi"] = inchi
+ 
+-    # Si la masse n'est pas documentée,
+-    # SENTOX tente un calcul à partir de la formule.
++    # Si la masse n'est pas documentÃ©e,
++    # SENTOX tente un calcul Ã  partir de la formule.
+ 
+     if (
+         structure["masse_molaire"] is None
+@@ -523,7 +528,7 @@ def extraire_structure(
+ 
+             structure[
+                 "masse_molaire_statut"
+-            ] = "calculé"
++            ] = "calculÃ©"
+ 
+     return structure
+ 
+@@ -536,10 +541,10 @@ def analyser_structure_2d(
+     smiles
+ ):
+     """
+-    Prépare la visualisation 2D.
++    PrÃ©pare la visualisation 2D.
+ 
+-    Le rendu graphique pourra être connecté à RDKit
+-    lorsque la bibliothèque sera disponible.
++    Le rendu graphique pourra Ãªtre connectÃ© Ã  RDKit
++    lorsque la bibliothÃ¨que sera disponible.
+     """
+ 
+     if not smiles:
+@@ -558,10 +563,10 @@ def analyser_structure_2d(
+         "smiles": smiles,
+ 
+         "mode":
+-            "structure moléculaire 2D",
++            "structure molÃ©culaire 2D",
+ 
+         "moteur":
+-            "RDKit recommandé pour le rendu graphique"
++            "RDKit recommandÃ© pour le rendu graphique"
+     }
+ 
+ 
+@@ -573,9 +578,9 @@ def analyser_structure_3d(
+     smiles
+ ):
+     """
+-    Prépare la structure 3D.
++    PrÃ©pare la structure 3D.
+ 
+-    Une vraie géométrie 3D nécessite un moteur
++    Une vraie gÃ©omÃ©trie 3D nÃ©cessite un moteur
+     de chimio-informatique.
+     """
+ 
+@@ -593,12 +598,12 @@ def analyser_structure_3d(
+ 
+     return {
+ 
+-        "statut": "à générer",
++        "statut": "Ã  gÃ©nÃ©rer",
+ 
+         "smiles": smiles,
+ 
+         "mode":
+-            "structure moléculaire 3D",
++            "structure molÃ©culaire 3D",
+ 
+         "moteur":
+             "RDKit / moteur 3D"
+@@ -606,14 +611,14 @@ def analyser_structure_3d(
+ 
+ 
+ # =========================================================
+-# 11. DESCRIPTEURS MOLÉCULAIRES SIMPLES
++# 11. DESCRIPTEURS MOLÃ‰CULAIRES SIMPLES
+ # =========================================================
+ 
+ def calculer_descripteurs_simples(
+     formule
+ ):
+     """
+-    Calcule quelques paramètres simples à partir
++    Calcule quelques paramÃ¨tres simples Ã  partir
+     de la formule brute.
+     """
+ 
+@@ -673,7 +678,7 @@ def calculer_descripteurs_simples(
+ 
+ 
+ # =========================================================
+-# 12. POSSIBILITÉ DE LIAISON
++# 12. POSSIBILITÃ‰ DE LIAISON
+ # =========================================================
+ 
+ def analyser_possibilite_liaison(
+@@ -681,17 +686,17 @@ def analyser_possibilite_liaison(
+     molecule_b
+ ):
+     """
+-    Analyse préliminaire de possibilité de liaison.
++    Analyse prÃ©liminaire de possibilitÃ© de liaison.
+ 
+     ATTENTION :
+-    cette fonction ne constitue PAS un docking moléculaire.
++    cette fonction ne constitue PAS un docking molÃ©culaire.
+ 
+-    Elle prépare la structure pour des analyses futures :
+-    - similarité moléculaire
++    Elle prÃ©pare la structure pour des analyses futures :
++    - similaritÃ© molÃ©culaire
+     - pharmacophore
+     - docking
+-    - ligand-récepteur
+-    - interactions protéine-ligand
++    - ligand-rÃ©cepteur
++    - interactions protÃ©ine-ligand
+     """
+ 
+     if not molecule_a or not molecule_b:
+@@ -726,19 +731,19 @@ def analyser_possibilite_liaison(
+             "confiance": None,
+ 
+             "message":
+-                "SMILES des deux molécules nécessaires"
++                "SMILES des deux molÃ©cules nÃ©cessaires"
+         }
+ 
+-    # Pour l'instant, SENTOX indique que les molécules
+-    # sont prêtes pour une analyse de liaison.
++    # Pour l'instant, SENTOX indique que les molÃ©cules
++    # sont prÃªtes pour une analyse de liaison.
+ 
+     return {
+ 
+         "statut":
+-            "prêt pour prédiction",
++            "prÃªt pour prÃ©diction",
+ 
+         "resultat":
+-            "Analyse structurale à effectuer",
++            "Analyse structurale Ã  effectuer",
+ 
+         "molecule_a":
+             smiles_a,
+@@ -748,13 +753,13 @@ def analyser_possibilite_liaison(
+ 
+         "methodes_prevues": [
+ 
+-            "similarité moléculaire",
++            "similaritÃ© molÃ©culaire",
+ 
+             "pharmacophore",
+ 
+-            "docking moléculaire",
++            "docking molÃ©culaire",
+ 
+-            "interaction ligand-récepteur"
++            "interaction ligand-rÃ©cepteur"
+         ],
+ 
+         "confiance":
+@@ -840,7 +845,7 @@ def analyser_pharmacologie(
+     ):
+         pharmacologie[
+             "statut"
+-        ] = "documenté"
++        ] = "documentÃ©"
+ 
+     return pharmacologie
+ 
+@@ -853,7 +858,8 @@ def analyser_toxicologie(
+     resultats_base
+ ):
+     """
+-    Recherche les données toxicologiques documentées.
++    Recherche les données toxicologiques documentées
++    dans la base SENTOX et dans la base toxicologique par CID.
+     """
+ 
+     toxicologie = {
+@@ -867,6 +873,8 @@ def analyser_toxicologie(
+         "dl50":
+             resultat_sentox(),
+ 
++        "dl50_observations": [],
++
+         "noael":
+             resultat_sentox(),
+ 
+@@ -881,6 +889,91 @@ def analyser_toxicologie(
+ 
+     donnees = resultats_base[0]
+ 
++    # -------------------------------------------------
++    # 1. Recherche du CID
++    # -------------------------------------------------
++
++    cid = donnees.get("CID")
++
++    # -------------------------------------------------
++    # 2. Recherche toxicologique par CID
++    # -------------------------------------------------
++
++    if cid:
++
++        donnees_tox = rechercher_toxicologie(cid)
++
++        if donnees_tox:
++
++            toxicologie[
++                "dl50_observations"
++            ] = [
++                {
++                    "valeur": x.get("Valeur"),
++                    "unite": x.get("Unite"),
++                    "espece": x.get("Espece"),
++                    "voie_exposition": x.get(
++                        "Voie_exposition"
++                    ),
++                    "type_exposition": x.get(
++                        "Type_exposition"
++                    ),
++                    "duree": x.get("Duree"),
++                    "source": x.get("Source"),
++                    "reference": x.get("Reference"),
++                    "qualite_donnee": x.get(
++                        "Qualite_donnee"
++                    ),
++                    "statut": x.get("Statut")
++                }
++                for x in donnees_tox
++                if str(x.get("Endpoint", "")).upper()
++                == "LD50"
++            ]
++
++            # -------------------------------------------------
++            # Première donnée orale utilisée comme valeur
++            # principale lorsqu'elle est disponible.
++            # Les autres observations restent conservées.
++            # -------------------------------------------------
++
++            observations_orales = [
++                x for x in toxicologie[
++                    "dl50_observations"
++                ]
++                if str(
++                    x.get("voie_exposition", "")
++                ).lower() == "orale"
++            ]
++
++            if observations_orales:
++
++                principale = observations_orales[0]
++
++                toxicologie[
++                    "dl50"
++                ] = documente(
++                    principale.get("valeur"),
++                    principale.get("source")
++                )
++
++            elif toxicologie["dl50_observations"]:
++
++                principale = toxicologie[
++                    "dl50_observations"
++                ][0]
++
++                toxicologie[
++                    "dl50"
++                ] = documente(
++                    principale.get("valeur"),
++                    principale.get("source")
++                )
++
++    # -------------------------------------------------
++    # 3. Ancienne recherche dans les données de la ligne
++    # -------------------------------------------------
++
+     dl50, source_dl50 = extraire_valeur(
+         donnees,
+         [
+@@ -907,7 +1000,15 @@ def analyser_toxicologie(
+         ]
+     )
+ 
+-    if dl50:
++    # -------------------------------------------------
++    # 4. Utiliser l'ancienne LD50 seulement si
++    #    aucune donnée CID n'a été trouvée.
++    # -------------------------------------------------
++
++    if (
++        dl50
++        and not toxicologie["dl50_observations"]
++    ):
+ 
+         toxicologie[
+             "dl50"
+@@ -945,10 +1046,11 @@ def analyser_toxicologie(
+ # =========================================================
+ 
+ def analyser_adme(
+-    resultats_base
++    resultats_base,
++    smiles=None
+ ):
+     """
+-    Recherche les paramètres ADME disponibles.
++    Recherche les paramÃ¨tres ADME disponibles.
+     """
+ 
+     adme = {
+@@ -963,7 +1065,10 @@ def analyser_adme(
+             resultat_sentox(),
+ 
+         "excretion":
+-            resultat_sentox()
++            resultat_sentox(),
++
++        "structure_rdkit":
++            calculer_adme_structure(smiles)
+     }
+ 
+     if not resultats_base:
+@@ -988,7 +1093,7 @@ def analyser_adme(
+ 
+         "excretion": [
+             "excretion",
+-            "excrétion"
++            "excrÃ©tion"
+         ]
+     }
+ 
+@@ -1010,17 +1115,17 @@ def analyser_adme(
+ 
+ 
+ # =========================================================
+-# 16. SCORE DE RISQUE PRÉLIMINAIRE
++# 16. SCORE DE RISQUE PRÃ‰LIMINAIRE
+ # =========================================================
+ 
+ def calculer_score_risque(
+     analyse
+ ):
+     """
+-    Produit un score préliminaire uniquement à partir
+-    des données disponibles.
++    Produit un score prÃ©liminaire uniquement Ã  partir
++    des donnÃ©es disponibles.
+ 
+-    Ce score n'est PAS une classification réglementaire.
++    Ce score n'est PAS une classification rÃ©glementaire.
+     """
+ 
+     score = 0
+@@ -1084,7 +1189,7 @@ def calculer_score_risque(
+         if any(
+             mot in texte
+             for mot in [
+-                "élevée",
++                "Ã©levÃ©e",
+                 "elevee",
+                 "high",
+                 "toxique"
+@@ -1095,15 +1200,15 @@ def calculer_score_risque(
+ 
+     if score >= 4:
+ 
+-        niveau = "élevé"
++        niveau = "Ã©levÃ©"
+ 
+     elif score >= 2:
+ 
+-        niveau = "modéré"
++        niveau = "modÃ©rÃ©"
+ 
+     else:
+ 
+-        niveau = "faible / données limitées"
++        niveau = "faible / donnÃ©es limitÃ©es"
+ 
+     return {
+ 
+@@ -1111,18 +1216,18 @@ def calculer_score_risque(
+ 
+         "niveau": niveau,
+ 
+-        "statut": "calculé",
++        "statut": "calculÃ©",
+ 
+         "source":
+-            "Algorithme préliminaire SENTOX",
++            "Algorithme prÃ©liminaire SENTOX",
+ 
+         "avertissement":
+-            "Ce score ne remplace pas une évaluation toxicologique réglementaire."
++            "Ce score ne remplace pas une Ã©valuation toxicologique rÃ©glementaire."
+     }
+ 
+ 
+ # =========================================================
+-# 17. CRÉATION DE L'ANALYSE
++# 17. CRÃ‰ATION DE L'ANALYSE
+ # =========================================================
+ 
+ def creer_analyse_element(
+@@ -1130,7 +1235,7 @@ def creer_analyse_element(
+     type_element="auto"
+ ):
+     """
+-    Crée la structure complète d'analyse.
++    CrÃ©e la structure complÃ¨te d'analyse.
+     """
+ 
+     return {
+@@ -1252,8 +1357,8 @@ def creer_analyse_element(
+ 
+ def analyser_constituants(resultats_base):
+     """
+-    Extrait les constituants associés à un élément
+-    à partir de tous les résultats de la base SENTOX.
++    Extrait les constituants associÃ©s Ã  un Ã©lÃ©ment
++    Ã  partir de tous les rÃ©sultats de la base SENTOX.
+     """
+ 
+     constituants = []
+@@ -1270,7 +1375,7 @@ def analyser_constituants(resultats_base):
+                 "nom constituant",
+                 "compound",
+                 "molecule",
+-                "molécule"
++                "molÃ©cule"
+             ]
+         )
+ 
+@@ -1289,7 +1394,7 @@ def analyser_constituants(resultats_base):
+         partie, _ = extraire_valeur(
+             donnees,
+             [
+-                "partie utilisée",
++                "partie utilisÃ©e",
+                 "partie",
+                 "part used"
+             ]
+@@ -1332,19 +1437,40 @@ def analyser_constituants(resultats_base):
+ 
+     return constituants
+ 
+-
+ # =========================================================
+ # 18. ANALYSE INDIVIDUELLE
+ # =========================================================
+ 
+ def analyser_element(
+     nom,
+-    type_element="auto"
++    type_element="auto",
++    concentration_mg_g=2.0,
++    quantite_g_jour=10.0,
++    poids_kg=70.0,
++    frequence=1.0
+ ):
+     """
+     Fonction principale du moteur SENTOX.
++
++    Ordre d'analyse :
++    1. Identification
++    2. Constituants
++    3. Pharmacologie
++    4. Toxicologie
++    5. Structure moléculaire
++    6. ADME structurel RDKit
++    7. Structure 2D
++    8. Structure 3D
++    9. Descripteurs moléculaires
++    10. Score de risque
++    11. Sources
++    12. Conclusion
+     """
+ 
++    # -----------------------------------------------------
++    # CREATION DE LA STRUCTURE D'ANALYSE
++    # -----------------------------------------------------
++
+     analyse = creer_analyse_element(
+         nom,
+         type_element
+@@ -1367,6 +1493,11 @@ def analyser_element(
+         "resultats_base",
+         []
+     )
++
++    # Récupération du CID depuis la base constituants
++    if resultats_base:
++        identification["CID"] = resultats_base[0].get("CID")
++
+     # -----------------------------------------------------
+     # CONSTITUANTS
+     # -----------------------------------------------------
+@@ -1376,6 +1507,7 @@ def analyser_element(
+     ] = analyser_constituants(
+         resultats_base
+     )
++
+     # -----------------------------------------------------
+     # PHARMACOLOGIE
+     # -----------------------------------------------------
+@@ -1396,8 +1528,28 @@ def analyser_element(
+         resultats_base
+     )
+ 
+-       # -----------------------------------------------------
+-    # STRUCTURE MOLÉCULAIRE
++    # -----------------------------------------------------
++    # EVALUATION MOE / RQ
++    # La DL50 reste un indicateur de toxicite aigue.
++    # Elle n'est pas utilisee automatiquement comme
++    # reference pour la MOE ou le RQ.
++
++    evaluation_risque = {
++        "statut": "reference_toxicologique_manquante",
++        "exposition_humaine": None,
++        "MOE": None,
++        "RQ": None,
++        "DL50": analyse.get("toxicologie", {}).get("dl50"),
++        "avertissement": (
++            "MOE et RQ non calcules : une reference "
++            "toxicologique adaptee et documentee est requise."
++        )
++    }
++
++    analyse["evaluation_risque"] = evaluation_risque
++
++    # -----------------------------------------------------
++    # STRUCTURE MOLECULAIRE
+     # -----------------------------------------------------
+ 
+     structure = extraire_structure(
+@@ -1413,8 +1565,6 @@ def analyser_element(
+     # -----------------------------------------------------
+     # ADME
+     # -----------------------------------------------------
+-    # Le SMILES extrait de la structure est transmis
+-    # au moteur ADME structurel RDKit.
+ 
+     analyse[
+         "adme"
+@@ -1422,6 +1572,7 @@ def analyser_element(
+         resultats_base,
+         structure.get("smiles")
+     )
++
+     # -----------------------------------------------------
+     # STRUCTURE 2D
+     # -----------------------------------------------------
+@@ -1447,7 +1598,7 @@ def analyser_element(
+     )
+ 
+     # -----------------------------------------------------
+-    # DESCRIPTEURS
++    # DESCRIPTEURS MOLECULAIRES
+     # -----------------------------------------------------
+ 
+     analyse[
+@@ -1526,7 +1677,7 @@ def analyser_element(
+ 
+ 
+ # =========================================================
+-# 19. ANALYSE D'UN MÉLANGE
++# 19. ANALYSE D'UN MÃ‰LANGE
+ # =========================================================
+ 
+ def analyser_melange(
+@@ -1626,28 +1777,28 @@ def analyser_melange(
+                     ],
+ 
+                 "interaction":
+-                    "À évaluer",
++                    "Ã€ Ã©valuer",
+ 
+                 "potentialisation":
+-                    "À évaluer",
++                    "Ã€ Ã©valuer",
+ 
+                 "antagonisme":
+-                    "À évaluer",
++                    "Ã€ Ã©valuer",
+ 
+                 "inhibition":
+-                    "À évaluer",
++                    "Ã€ Ã©valuer",
+ 
+                 "competition":
+-                    "À évaluer",
++                    "Ã€ Ã©valuer",
+ 
+                 "synergie":
+-                    "À évaluer",
++                    "Ã€ Ã©valuer",
+ 
+                 "liaison_moleculaire":
+                     liaison,
+ 
+                 "statut":
+-                    "prédit"
++                    "prÃ©dit"
+             })
+ 
+     # -----------------------------------------------------
+@@ -1679,15 +1830,15 @@ def analyser_melange(
+ 
+     if score_global >= 7:
+ 
+-        niveau_global = "élevé"
++        niveau_global = "Ã©levÃ©"
+ 
+     elif score_global >= 3:
+ 
+-        niveau_global = "modéré"
++        niveau_global = "modÃ©rÃ©"
+ 
+     else:
+ 
+-        niveau_global = "faible / données limitées"
++        niveau_global = "faible / donnÃ©es limitÃ©es"
+ 
+     # -----------------------------------------------------
+     # RETOUR
+@@ -1704,16 +1855,16 @@ def analyser_melange(
+         "adme": {
+ 
+             "absorption":
+-                "à évaluer",
++                "Ã  Ã©valuer",
+ 
+             "distribution":
+-                "à évaluer",
++                "Ã  Ã©valuer",
+ 
+             "metabolisme":
+-                "à évaluer",
++                "Ã  Ã©valuer",
+ 
+             "excretion":
+-                "à évaluer"
++                "Ã  Ã©valuer"
+         },
+ 
+         "toxicologie": {
+@@ -1725,18 +1876,18 @@ def analyser_melange(
+                 score_global,
+ 
+             "statut":
+-                "calculé",
++                "calculÃ©",
+ 
+             "message":
+-                "Score préliminaire SENTOX"
++                "Score prÃ©liminaire SENTOX"
+         },
+ 
+         "conclusion": (
+-            "SENTOX a analysé les éléments du mélange "
+-            "et séparé les données documentées, calculées "
+-            "et les résultats destinés à la prédiction. "
+-            "Les interactions moléculaires nécessitent "
+-            "des modèles spécialisés pour être confirmées."
++            "SENTOX a analysÃ© les Ã©lÃ©ments du mÃ©lange "
++            "et sÃ©parÃ© les donnÃ©es documentÃ©es, calculÃ©es "
++            "et les rÃ©sultats destinÃ©s Ã  la prÃ©diction. "
++            "Les interactions molÃ©culaires nÃ©cessitent "
++            "des modÃ¨les spÃ©cialisÃ©s pour Ãªtre confirmÃ©es."
+         )
+     }
+ 
+@@ -1750,7 +1901,7 @@ def exporter_json(
+     fichier="sentox_resultat.json"
+ ):
+     """
+-    Exporte un résultat SENTOX au format JSON.
++    Exporte un rÃ©sultat SENTOX au format JSON.
+     """
+ 
+     with open(
+@@ -1782,7 +1933,7 @@ if __name__ == "__main__":
+     print()
+ 
+     test = analyser_element(
+-        "paracétamol",
++        "paracÃ©tamol",
+         "medicament"
+     )
+ 
+@@ -1802,7 +1953,7 @@ if __name__ == "__main__":
+ FICHIER_BASE_MOLECULES = os.path.join(
+     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+     "data",
+-    "sentox_database_2000_enriched_noms.csv"
++    "sentox_database_2000_enriched.csv"
+ )
+ 
+ 
+@@ -1827,7 +1978,7 @@ def normaliser_recherche(texte):
+ 
+ 
+ def rechercher_molecule_sentox(nom_recherche):
+-    """Recherche une molécule dans la base SENTOX 2000."""
++    """Recherche une molÃ©cule dans la base SENTOX 2000."""
+ 
+     if not nom_recherche:
+         return None
+@@ -1910,13 +2061,13 @@ FICHIERS_BASES_SENTOX = [
+     ),
+     os.path.join(
+         os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+-        "data", "sentox_database_2000_enriched_noms.csv"
++        "data", "sentox_database_2000_enriched.csv"
+     )
+ ]
+ 
+ 
+ def rechercher_molecule_multibase(nom_recherche):
+-    """Recherche une molécule dans toutes les bases SENTOX."""
++    """Recherche une molÃ©cule dans toutes les bases SENTOX."""
+ 
+     recherche = normaliser_recherche(nom_recherche)
+ 
+@@ -2000,13 +2151,13 @@ def rechercher_molecule_multibase(nom_recherche):
+ 
+ def predire_ld50_qsar(smiles):
+     """
+-    Prédit la LD50 orale à partir d'un SMILES.
++    PrÃ©dit la LD50 orale Ã  partir d'un SMILES.
+ 
+     IMPORTANT :
+-    Cette fonction utilise le modèle QSAR expérimental
++    Cette fonction utilise le modÃ¨le QSAR expÃ©rimental
+     actuellement disponible dans SENTOX.
+-    La prédiction ne constitue pas une preuve expérimentale
+-    ni une donnée toxicologique réglementaire.
++    La prÃ©diction ne constitue pas une preuve expÃ©rimentale
++    ni une donnÃ©e toxicologique rÃ©glementaire.
+     """
+ 
+     if not smiles:
+@@ -2032,16 +2183,16 @@ def predire_ld50_qsar(smiles):
+     ):
+         return {
+             "statut": "non disponible",
+-            "raison": "SMILES invalide ou descripteurs impossibles à calculer"
++            "raison": "SMILES invalide ou descripteurs impossibles Ã  calculer"
+         }
+ 
+-    # Chargement du modèle
++    # Chargement du modÃ¨le
+     modele_path = BASE_DIR / "models" / "qsar_model.joblib"
+ 
+     if not modele_path.exists():
+         return {
+             "statut": "non disponible",
+-            "raison": "Modèle QSAR introuvable"
++            "raison": "ModÃ¨le QSAR introuvable"
+         }
+ 
+     modele_data = joblib.load(modele_path)
+@@ -2049,13 +2200,13 @@ def predire_ld50_qsar(smiles):
+     modele = modele_data["model"]
+     features = modele_data["features"]
+ 
+-    # Construction du vecteur de prédiction
++    # Construction du vecteur de prÃ©diction
+     X = pd.DataFrame(
+         [[descripteurs[f] for f in features]],
+         columns=features
+     )
+ 
+-    # Prédiction
++    # PrÃ©diction
+     prediction_log = float(
+         modele.predict(X)[0]
+     )
+@@ -2065,7 +2216,7 @@ def predire_ld50_qsar(smiles):
+     )
+ 
+     return {
+-        "statut": "PRÉDIT",
++        "statut": "PRÃ‰DIT",
+         "valeur": round(prediction_ld50, 3),
+         "unite": "mg/kg",
+         "log10_LD50": round(prediction_log, 4),
+@@ -2080,9 +2231,12 @@ def predire_ld50_qsar(smiles):
+         ),
+         "descripteurs": descripteurs,
+         "commentaire": (
+-            "Prédiction QSAR expérimentale/prototype. "
++            "PrÃ©diction QSAR expÃ©rimentale/prototype. "
+             "Ne constitue pas une preuve toxicologique "
+-            "expérimentale ou réglementaire."
++            "expÃ©rimentale ou rÃ©glementaire."
+         )
+     }
+         
++
++
++
+diff --git a/web/qsar/sentox_toxicology_database.py b/web/qsar/sentox_toxicology_database.py
+index 0dd49f6..9807f44 100644
+--- a/web/qsar/sentox_toxicology_database.py
++++ b/web/qsar/sentox_toxicology_database.py
+@@ -16,18 +16,41 @@ def charger_base_toxicologique():
+ 
+ def rechercher_toxicologie(cid):
+     tox = charger_base_toxicologique()
+-    resultat = tox[tox["CID"] == cid].copy()
++
++    resultat = tox[
++        tox["CID"].astype(str).str.strip()
++        == str(cid).strip()
++    ].copy()
++
+     if resultat.empty:
+         return []
+-    return resultat.to_dict(orient="records")
++
++    return resultat.to_dict(
++        orient="records"
++    )
+ 
+ 
+ def rechercher_molecule(cid):
++    # 1. Recherche dans la base structurelle principale
+     structure = charger_base_structurelle()
+-    resultat = structure[structure["CID"] == cid]
+-    if resultat.empty:
+-        return None
+-    return resultat.iloc[0].to_dict()
++    resultat = structure[structure["CID"].astype(str) == str(cid)]
++
++    if not resultat.empty:
++        return resultat.iloc[0].to_dict()
++
++    # 2. Recherche dans la base des constituants végétaux
++    constituants_file = BASE_DIR / "data" / "constituants_enrichis.csv"
++
++    if constituants_file.exists():
++        constituants = pd.read_csv(constituants_file)
++        resultat = constituants[
++            constituants["CID"].astype(str) == str(cid)
++        ]
++
++        if not resultat.empty:
++            return resultat.iloc[0].to_dict()
++
++    return None
+ 
+ 
+ def analyser_cid(cid):
+diff --git a/web/templates/analyse.html b/web/templates/analyse.html
+index 688b5fc..2f4faa2 100644
+--- a/web/templates/analyse.html
++++ b/web/templates/analyse.html
+@@ -299,6 +299,22 @@
+ 
+ </div>
+ 
++<div class="card">
++    <h2>🧪 9. Exposition, MOE et RQ</h2>
++
++    {% if resultat.evaluation_risque and resultat.evaluation_risque.statut == "calculée" %}
++        <div class="success">
++            <p><strong>Exposition humaine :</strong> {{ resultat.evaluation_risque.exposition_humaine }} mg/kg/jour</p>
++            <p><strong>Point de départ :</strong> {{ resultat.evaluation_risque.point_depart }} mg/kg</p>
++            <p><strong>MOE :</strong> {{ resultat.evaluation_risque.MOE.MOE }}</p>
++            <p><strong>RQ :</strong> {{ resultat.evaluation_risque.RQ.RQ }}</p>
++            <small>Les valeurs MOE et RQ sont des indicateurs quantitatifs. Leur interprétation dépend du contexte toxicologique et réglementaire.</small>
++        </div>
++    {% else %}
++        <p class="empty">Évaluation d'exposition non disponible.</p>
++    {% endif %}
++</div>
++
+ 
+ <!-- =====================================================
+      ANALYSE INDIVIDUELLE
+diff --git a/web/templates/index.html b/web/templates/index.html
+index ee5b04d..c74680f 100644
+--- a/web/templates/index.html
++++ b/web/templates/index.html
+@@ -232,6 +232,102 @@
+                 font-size: 30px;
+             }
+         }
++
++/* ===== ANIMATION VISUELLE SENTOX ===== */
++.hero-gallery {
++    display: grid;
++    grid-template-columns: 1.4fr 1fr;
++    gap: 18px;
++    margin: 24px 0;
++}
++
++.hero-banner,
++.hero-card {
++    position: relative;
++    overflow: hidden;
++    border-radius: 18px;
++    background: #e8f2ed;
++    box-shadow: 0 6px 22px rgba(0,0,0,.10);
++}
++
++.hero-banner {
++    min-height: 300px;
++}
++
++.hero-card {
++    min-height: 140px;
++}
++
++.hero-side {
++    display: grid;
++    gap: 18px;
++}
++
++.hero-gallery img {
++    width: 100%;
++    height: 100%;
++    min-height: 140px;
++    object-fit: cover;
++    display: block;
++    transition: transform .7s ease;
++}
++
++.hero-gallery .hero-banner img {
++    position: absolute;
++    inset: 0;
++    min-height: 300px;
++}
++
++.hero-gallery .hero-card img {
++    position: absolute;
++    inset: 0;
++}
++
++.hero-gallery a:hover img {
++    transform: scale(1.045);
++}
++
++.hero-caption {
++    position: absolute;
++    inset: auto 0 0;
++    padding: 18px;
++    color: white;
++    background: linear-gradient(transparent, rgba(0,35,25,.88));
++    font-weight: bold;
++    font-size: 17px;
++}
++
++.hero-banner img {
++    animation: sentoxReveal 1.2s ease both;
++}
++
++@keyframes sentoxReveal {
++    from { opacity: .4; transform: scale(1.04); }
++    to { opacity: 1; transform: scale(1); }
++}
++
++@media (max-width: 700px) {
++    .hero-gallery {
++        grid-template-columns: 1fr;
++    }
++
++    .hero-banner {
++        min-height: 220px;
++    }
++
++    .hero-gallery .hero-banner img {
++        min-height: 220px;
++    }
++
++    .hero-side {
++        grid-template-columns: 1fr 1fr;
++    }
++
++    .hero-card {
++        min-height: 120px;
++    }
++}
++
+     </style>
+ </head>
+ 
+@@ -246,6 +342,35 @@
+ 
+ <main class="container">
+ 
++    <!-- GALERIE VISUELLE SENTOX -->
++    <section class="hero-gallery">
++
++        <a class="hero-banner" href="/dashboard" style="display:block;">
++            <img src="{{ url_for('static', filename='images/Bannière principale animée.PNG') }}"
++                 alt="Plateforme SENTOX">
++            <div class="hero-caption">
++                SENTOX — Toxicologie prédictive et innovation scientifique
++            </div>
++        </a>
++
++        <div class="hero-side">
++
++            <a class="hero-card" href="/dashboard" style="display:block;">
++                <img src="{{ url_for('static', filename='images/RCHERCHEDEVELOPPEMENT.PNG') }}"
++                     alt="Recherche et développement scientifique">
++                <div class="hero-caption">Recherche & développement</div>
++            </a>
++
++            <a class="hero-card" href="/dashboard" style="display:block;">
++                <img src="{{ url_for('static', filename='images/SENTOXTV..PNG') }}"
++                     alt="SENTOX TV">
++                <div class="hero-caption">SENTOX TV — La science en action</div>
++            </a>
++
++        </div>
++    </section>
++    <!-- FIN GALERIE VISUELLE -->
++
+     <section class="welcome">
+         <h1>Bienvenue dans SENTOX</h1>
+         <p>

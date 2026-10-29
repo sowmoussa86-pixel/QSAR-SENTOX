@@ -1,0 +1,131 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QSAR-SENTOX | Plateforme scientifique</title>
+<style>
+:root {
+  --bg: #07111f;
+  --sidebar: #0b1930;
+  --panel: #10233d;
+  --panel2: #132b49;
+  --blue: #278bff;
+  --cyan: #38d9ff;
+  --text: #edf5ff;
+  --muted: #a6bad3;
+  --border: #244363;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: radial-gradient(ellipse at top right,#102d50,var(--bg) 60%);
+  color: var(--text);
+  min-height: 100vh;
+}
+.layout { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 260px; flex-shrink: 0; padding: 26px 17px;
+  background: var(--sidebar); border-right: 1px solid var(--border);
+}
+.brand {
+  font-size: 27px; font-weight: 900; letter-spacing: 2px;
+  color: var(--cyan); margin-bottom: 5px;
+}
+.tagline { font-size: 12px; color: var(--muted); line-height: 1.5; margin-bottom: 28px; }
+.nav-title {
+  font-size: 10px; letter-spacing: 2px; color: #7292b7;
+  margin: 22px 10px 8px;
+}
+.nav a {
+  display: block; color: #d6e8ff; text-decoration: none;
+  padding: 12px 13px; border-radius: 9px; margin: 5px 0;
+  font-size: 13px; border: 1px solid transparent;
+  transition: .2s;
+}
+.nav a:hover {
+  background: #153354; border-color: #28669a; color: var(--cyan);
+}
+.main { flex: 1; min-width: 0; padding: 30px; }
+.topline {
+  display: flex; flex-wrap: wrap; justify-content: space-between;
+  gap: 12px; color: var(--muted); font-size: 12px; margin-bottom: 22px;
+}
+.status {
+  color: #69e6c1; border: 1px solid #216a61; border-radius: 20px;
+  padding: 5px 10px; background: #0b302f;
+}
+.panel {
+  background: rgba(12,29,50,.88); padding: 27px;
+  border-radius: 17px; border: 1px solid var(--border);
+  box-shadow: 0 12px 40px #0003;
+}
+h1 { color: var(--cyan); margin-top: 0; font-size: clamp(25px,3vw,36px); }
+h2 { color: #8fc8ff; }
+p { line-height: 1.7; }
+.note { color: var(--muted); line-height: 1.7; }
+.panel .panel {
+  background: var(--panel); border-color: var(--border);
+  box-shadow: none; transition: .2s;
+}
+.panel .panel:hover {
+  transform: translateY(-3px); border-color: var(--blue);
+  box-shadow: 0 8px 24px #006dff20;
+}
+a { color: var(--cyan); }
+button {
+  background: linear-gradient(100deg,var(--blue),#1765d1);
+  color: white; border: 0; border-radius: 9px;
+  padding: 12px 17px; cursor: pointer; font-weight: 600;
+}
+input, select, textarea {
+  max-width: 100%; background: #09182a; color: var(--text);
+  border: 1px solid var(--border); border-radius: 8px;
+  padding: 11px;
+}
+@media (max-width: 760px) {
+  .layout { display: block; }
+  .sidebar { width: 100%; padding: 20px 15px; }
+  .nav { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 4px; }
+  .nav a { margin: 2px 0; padding: 10px; }
+  .main { padding: 15px; }
+  .panel { padding: 18px; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <div class="brand">QSAR-SENTOX</div>
+  <div class="tagline">Plateforme de toxicologie prédictive et d'innovation scientifique</div>
+  <nav class="nav">
+    <div class="nav-title">ESPACE SCIENTIFIQUE</div>
+    <a href="/dashboard">⌂ Tableau de bord</a>
+    <a href="/">⌕ Recherche générale</a>
+    <a href="/module/plantes">♧ Plantes médicinales</a>
+    <a href="/module/molecules">⚗ Molécules &amp; QSAR</a>
+    <a href="/module/melanges">⇄ Mélanges &amp; interactions</a>
+    <a href="/module/toxicologie">◈ Toxicologie &amp; exposition</a>
+    <a href="/module/preuves">▤ Sources scientifiques</a>
+    <a href="/module/rapports">▧ Rapports d'expertise</a>
+    <div class="nav-title">AUTRES MODULES</div>
+    <a href="/dashboard#phytotoxicologie">Phytotoxicologie</a>
+    <a href="/dashboard#moe-rq">MOE et RQ</a>
+    <a href="/dashboard#pesticides">Pesticides et environnement</a>
+    <a href="/dashboard#parametres">Paramètres</a>
+  </nav>
+</aside>
+<main class="main">
+  <div class="topline">
+    <span>QSAR-SENTOX / Espace scientifique</span>
+    <span class="status">Interface de développement</span>
+  </div>
+  <section class="panel">
+    {% block content %}{% endblock %}
+  </section>
+</main>
+</div>
+</body>
+</html>

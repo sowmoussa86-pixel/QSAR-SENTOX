@@ -1,0 +1,57 @@
+```html
+{% extends "modules/base.html" %}
+
+{% block content %}
+<h1>Tableau de bord SENTOX</h1>
+
+<p class="note">
+Bienvenue dans l’espace scientifique SENTOX. Sélectionnez un module
+pour explorer les données, les analyses et les outils disponibles.
+</p>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:24px;">
+
+  <div class="panel">
+    <h2>Plantes médicinales</h2>
+    <p class="note">Identification botanique, parties utilisées et constituants.</p>
+    <a href="/module/plantes">Ouvrir le module</a>
+  </div>
+
+  <div class="panel">
+    <h2>Molécules &amp; QSAR</h2>
+    <p class="note">Structures chimiques, descripteurs et prédictions.</p>
+    <a href="/module/molecules">Ouvrir le module</a>
+  </div>
+
+  <div class="panel">
+    <h2>Mélanges &amp; interactions</h2>
+    <p class="note">Étude de préparations contenant plusieurs plantes ou substances.</p>
+    <a href="/module/melanges">Ouvrir le module</a>
+  </div>
+
+  <div class="panel">
+    <h2>Toxicologie &amp; exposition</h2>
+    <p class="note">Données toxicologiques, exposition et extrapolation.</p>
+    <a href="/module/toxicologie">Ouvrir le module</a>
+  </div>
+
+  <div class="panel">
+    <h2>Preuves scientifiques</h2>
+    <p class="note">Sources, publications et niveau de preuve disponible.</p>
+    <a href="/module/preuves">Ouvrir le module</a>
+  </div>
+
+  <div class="panel">
+    <h2>Rapports d’expertise</h2>
+    <p class="note">Accès futur aux synthèses et aux exports des analyses.</p>
+    <a href="/module/rapports">Ouvrir le module</a>
+  </div>
+
+</div>
+
+<p class="note" style="margin-top:24px;">
+Version de développement : la présence d’un module dans le menu ne garantit
+pas que toutes ses fonctionnalités scientifiques soient déjà opérationnelles.
+</p>
+{% endblock %}
+```

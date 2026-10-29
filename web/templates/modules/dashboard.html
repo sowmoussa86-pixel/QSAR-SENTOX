@@ -1,0 +1,82 @@
+{% extends "modules/base.html" %}
+{% block content %}
+<style>
+.dashboard{color:#12366b}.dashboard *{box-sizing:border-box}
+.dashboard .page-title{color:#123d78;font-size:clamp(26px,3vw,36px);margin:0;font-weight:800}
+.dashboard .subtitle{color:#3474b5;margin:5px 0 20px}
+.dashboard .hero{display:flex;align-items:center;gap:18px;flex-wrap:wrap;min-height:112px;padding:20px 24px;margin:0 0 22px;border:1px solid #b8e3ff;border-radius:16px;overflow:hidden;background:radial-gradient(circle at 78% 15%,#a5e7ff 0,transparent 17%),radial-gradient(circle at 65% 100%,#c9f7eb 0,transparent 25%),linear-gradient(105deg,#f5fcff,#e5f5ff 52%,#f8ffff);position:relative}
+.dashboard .hero:after{content:"";position:absolute;right:10%;top:-42px;width:190px;height:190px;border:1px solid #8acdf3;border-radius:50%;opacity:.5;box-shadow:0 0 0 22px #d6f1ff,0 0 0 44px #e7f8ff}
+.dashboard .logo-mark{position:relative;z-index:1;width:72px;height:72px;flex:0 0 72px;display:grid;place-items:center;border-radius:18px;background:linear-gradient(145deg,#d8f3ff,#fff);border:1px solid #b8e5ff}
+.dashboard .logo-mark svg{width:58px;height:58px}.dashboard .brand{position:relative;z-index:1}
+.dashboard .brand-name{font-size:clamp(24px,3vw,35px);font-weight:900;color:#174b91;line-height:1.1}.dashboard .brand-name span{color:#079b70}
+.dashboard .brand-sub{color:#365f8e;font-size:13px;margin-top:6px}
+.dashboard .system-status{position:relative;z-index:1;margin-left:auto;background:#fff;border:1px solid #c5e6fa;border-radius:12px;padding:12px 15px;color:#174b91;font-size:12px;font-weight:700}
+.dashboard .system-status b{color:#0ca56b}
+.dashboard .kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:15px}
+.dashboard .kpi{display:flex;align-items:center;gap:13px;min-width:0;padding:16px;border-radius:13px;background:#fff;border:1px solid #d5e9fb;box-shadow:0 5px 18px #2569a20f}
+.dashboard .kpi-icon{width:58px;height:58px;flex:0 0 58px;display:grid;place-items:center;border-radius:13px;background:#e2f5ff;color:#087ed0;font-size:27px}
+.dashboard .kpi:nth-child(2) .kpi-icon{background:#e2faef;color:#079969}.dashboard .kpi:nth-child(3) .kpi-icon{background:#fff1df;color:#ef8a19}.dashboard .kpi:nth-child(4) .kpi-icon{background:#ffe9ec;color:#e74756}
+.dashboard .kpi-label{color:#365f8e;font-size:12px;line-height:1.4}.dashboard .kpi-value{color:#086fd0;font-size:clamp(18px,2vw,25px);font-weight:900;margin:5px 0 2px}.dashboard .kpi:nth-child(2) .kpi-value{color:#078b62}.dashboard .kpi:nth-child(3) .kpi-value{color:#d87910}.dashboard .kpi:nth-child(4) .kpi-value{color:#dc3545}.dashboard .kpi-help{color:#58799c;font-size:11px;line-height:1.35}
+.dashboard .grid-main{display:grid;grid-template-columns:1.3fr .95fr 1.05fr;gap:13px;margin-bottom:14px}
+.dashboard .card{background:#fff;border:1px solid #d5e9fb;border-radius:14px;padding:17px;box-shadow:0 5px 18px #2569a20d;min-width:0}
+.dashboard .card h2{color:#123f7d;font-size:16px;margin:0 0 15px;display:flex;align-items:center;gap:9px}.dashboard .card h2 .ico{color:#0999df;font-size:23px}
+.dashboard .chart{height:142px;display:flex;align-items:flex-end;gap:7px;padding:0 4px;border-bottom:1px solid #d8e8f6}
+.dashboard .bar-wrap{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:5px;min-width:0}.dashboard .bar{width:100%;max-width:30px;background:linear-gradient(180deg,#12b8e8,#1882e7);border-radius:4px 4px 0 0}.dashboard .bar-label{color:#45688e;font-size:10px}.dashboard .fine-print{color:#6482a2;font-size:10px;line-height:1.45;margin-top:9px}
+.dashboard .risk-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.dashboard .risk-tile{text-align:center;border:1px solid #deedfa;border-radius:10px;background:#f4faff;padding:11px 5px;color:#315780;font-size:11px;line-height:1.4}.dashboard .risk-tile .organ{display:block;font-size:24px;margin-bottom:4px}
+.dashboard .risk-scale{height:11px;border-radius:20px;margin:15px 0 6px;background:linear-gradient(90deg,#22c875,#f9d33d,#ff4b61)}.dashboard .scale-labels{display:flex;justify-content:space-between;font-size:10px;color:#55779b}
+.dashboard .bottom-grid{display:grid;grid-template-columns:1.45fr 1fr;gap:13px}.dashboard .table-scroll{overflow-x:auto}.dashboard table{border-collapse:collapse;width:100%;font-size:12px}.dashboard th{background:#eff7ff;color:#214b7e;padding:10px 8px;text-align:left;white-space:nowrap}.dashboard td{border-bottom:1px solid #e4eef8;padding:10px 8px;color:#365a80}
+.dashboard .data-line{display:flex;align-items:center;gap:9px;margin:13px 0;color:#365a80;font-size:12px}.dashboard .dot{width:11px;height:11px;border-radius:50%;flex:0 0 11px}.dashboard .data-line strong{margin-left:auto;color:#214b7e}
+.dashboard .section-title{color:#123f7d;font-size:21px;margin:24px 0 12px}.dashboard .module-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.dashboard .module-card{border:1px solid #d5e9fb;border-radius:13px;padding:16px;background:linear-gradient(145deg,#fff,#f4faff);min-width:0;transition:transform .15s,box-shadow .15s}.dashboard .module-card:hover{transform:translateY(-2px);box-shadow:0 8px 22px #2467a21a}
+.dashboard .module-icon{font-size:25px;color:#0786d6}.dashboard .module-card h3{color:#17477f;font-size:14px;margin:7px 0}.dashboard .module-card p{color:#58799c;font-size:12px;line-height:1.5;min-height:36px}.dashboard .module-card a{display:inline-block;color:#087bd3;font-size:12px;font-weight:700;text-decoration:none}.dashboard .module-card a:hover{text-decoration:underline}
+.dashboard .tag{display:inline-block;border-radius:12px;padding:4px 8px;font-size:10px;background:#e4f8ee;color:#087c51}.dashboard .tag.pending{background:#fff4d9;color:#946600}
+.dashboard .notice{margin-top:16px;padding:12px 14px;background:#f1f8ff;border:1px solid #deedfa;border-radius:10px;color:#537496;font-size:11px;line-height:1.6}
+@media(max-width:1100px){.dashboard .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.dashboard .grid-main{grid-template-columns:repeat(2,minmax(0,1fr))}.dashboard .grid-main .card:first-child{grid-column:1/-1}.dashboard .module-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.dashboard .kpis,.dashboard .grid-main,.dashboard .bottom-grid,.dashboard .module-grid{grid-template-columns:1fr}.dashboard .grid-main .card:first-child{grid-column:auto}.dashboard .hero{padding:15px}.dashboard .system-status{margin-left:0}}
+</style>
+<div class="dashboard">
+<header class="hero">
+<div class="logo-mark" aria-label="Logo QSAR-SENTOX"><svg viewBox="0 0 100 100" role="img" aria-label="Molécule et feuille"><g stroke="#168ed4" stroke-width="4" fill="#e8f8ff"><line x1="22" y1="28" x2="43" y2="17"/><line x1="43" y1="17" x2="61" y2="31"/><line x1="22" y1="28" x2="22" y2="53"/><line x1="22" y1="53" x2="43" y2="65"/><line x1="43" y1="65" x2="61" y2="52"/><circle cx="22" cy="28" r="7"/><circle cx="43" cy="17" r="7"/><circle cx="61" cy="31" r="7"/><circle cx="22" cy="53" r="7"/><circle cx="43" cy="65" r="7"/></g><path d="M49 75 C49 53,67 32,88 31 C88 55,72 76,49 75Z" fill="#20b779"/><path d="M52 72 L78 42" stroke="#087b58" stroke-width="3" fill="none"/></svg></div>
+<div class="brand"><div class="brand-name">QSAR-<span>SENTOX</span></div><div class="brand-sub">Plateforme d’analyse toxicologique prédictive</div></div>
+<div class="system-status"><b>●</b> Interface locale prête<br><span style="font-weight:400;color:#55779b">Données et modules à vérifier</span></div>
+</header>
+<h1 class="page-title">Tableau de bord</h1><p class="subtitle">Synthèse des analyses et des risques</p>
+<div class="kpis">
+<div class="kpi"><div class="kpi-icon">⚗</div><div><div class="kpi-label">Base toxicologique</div><div class="kpi-value">Consulter</div><div class="kpi-help">Substances et molécules</div></div></div>
+<div class="kpi"><div class="kpi-icon">▤</div><div><div class="kpi-label">Analyses QSAR</div><div class="kpi-value">Explorer</div><div class="kpi-help">Accéder aux outils existants</div></div></div>
+<div class="kpi"><div class="kpi-icon">⚠</div><div><div class="kpi-label">Qualité des données</div><div class="kpi-value">À vérifier</div><div class="kpi-help">Sources et validation</div></div></div>
+<div class="kpi"><div class="kpi-icon">♧</div><div><div class="kpi-label">Modules complémentaires</div><div class="kpi-value">À raccorder</div><div class="kpi-help">Phytotoxicologie et environnement</div></div></div>
+</div>
+<div class="grid-main">
+<section class="card"><h2><span class="ico">▥</span> Activité des analyses</h2><div class="chart">
+{% for item in [('Jan',18),('Fév',28),('Mar',43),('Avr',58),('Mai',68),('Juin',48),('Juil',39),('Août',50),('Sep',77),('Oct',88),('Nov',65),('Déc',43)] %}<div class="bar-wrap"><div class="bar" style="height:{{ item[1] }}%"></div><span class="bar-label">{{ item[0] }}</span></div>{% endfor %}
+</div><div class="fine-print">Graphique illustratif uniquement : il ne représente pas des analyses réelles.</div></section>
+<section class="card"><h2><span class="ico">⬡</span> Profil toxicologique</h2><div class="risk-grid"><div class="risk-tile"><span class="organ">🧪</span>Toxicité aiguë</div><div class="risk-tile"><span class="organ">🫁</span>Toxicité chronique</div><div class="risk-tile"><span class="organ">🧬</span>Génotoxicité</div><div class="risk-tile"><span class="organ">🌿</span>Écotoxicité</div></div><div class="fine-print">Le profil dépendra des données validées pour chaque substance.</div></section>
+<section class="card"><h2><span class="ico">◎</span> Organes cibles potentiels</h2><div class="risk-grid"><div class="risk-tile"><span class="organ">🫀</span>Foie</div><div class="risk-tile"><span class="organ">🫘</span>Reins</div><div class="risk-tile"><span class="organ">🫁</span>Poumons</div><div class="risk-tile"><span class="organ">🧠</span>Système nerveux</div></div><div class="fine-print">Illustrations indicatives, pas de diagnostic ni de cible confirmée.</div><div class="risk-scale"></div><div class="scale-labels"><span>Faible</span><span>Modéré</span><span>Élevé</span></div></section>
+</div>
+<div class="bottom-grid">
+<section class="card"><h2><span class="ico">▤</span> Accès rapides aux analyses</h2><div class="table-scroll"><table><thead><tr><th>Module</th><th>Fonction</th><th>Accès</th></tr></thead><tbody>
+<tr><td>Molécules &amp; QSAR</td><td>Recherche et analyse moléculaire</td><td><a href="/module/molecules">Ouvrir</a></td></tr>
+<tr><td>Plantes médicinales</td><td>Exploration botanique</td><td><a href="/module/plantes">Ouvrir</a></td></tr>
+<tr><td>Mélanges &amp; interactions</td><td>Préparations et mélanges</td><td><a href="/module/melanges">Ouvrir</a></td></tr>
+<tr><td>Toxicologie &amp; exposition</td><td>Données toxicologiques</td><td><a href="/module/toxicologie">Ouvrir</a></td></tr>
+<tr><td>Sources scientifiques</td><td>Références et niveau de preuve</td><td><a href="/module/preuves">Ouvrir</a></td></tr>
+<tr><td>Rapports d’expertise</td><td>Synthèses disponibles</td><td><a href="/module/rapports">Ouvrir</a></td></tr>
+</tbody></table></div></section>
+<section class="card"><h2><span class="ico">◉</span> Qualité des données</h2><div class="data-line"><span class="dot" style="background:#20c997"></span>Données validées<strong>À documenter</strong></div><div class="data-line"><span class="dot" style="background:#ffc83d"></span>Données partielles<strong>À vérifier</strong></div><div class="data-line"><span class="dot" style="background:#ff5964"></span>Données manquantes<strong>À compléter</strong></div><div class="notice">Les statistiques seront calculées à partir de la base réelle après vérification de sa structure.</div></section>
+</div>
+<h2 class="section-title">Modules scientifiques</h2>
+<div class="module-grid">
+<article class="module-card"><div class="module-icon">⌕</div><h3>Recherche de substance</h3><p>Recherche par nom et identifiants disponibles.</p><a href="/">Ouvrir la recherche →</a></article>
+<article class="module-card"><div class="module-icon">▤</div><h3>Base toxicologique</h3><p>Consultation des données toxicologiques existantes.</p><a href="/module/toxicologie">Consulter →</a></article>
+<article class="module-card"><div class="module-icon">⚗</div><h3>QSAR prédictif &amp; ADME-Tox</h3><p>Accès au module moléculaire existant.</p><a href="/module/molecules">Ouvrir le module →</a></article>
+<article class="module-card"><div class="module-icon">🌿</div><h3>Phytotoxicologie</h3><p>Module dédié aux effets sur les plantes : raccordement à réaliser.</p><span class="tag pending">À développer</span></article>
+<article class="module-card"><div class="module-icon">⚖</div><h3>Exposition, MOE &amp; RQ</h3><p>Calculs à raccorder après validation des paramètres toxicologiques.</p><a href="/module/toxicologie">Consulter l’exposition →</a></article>
+<article class="module-card"><div class="module-icon">☘</div><h3>Pesticides &amp; environnement</h3><p>Module environnemental spécialisé à raccorder.</p><span class="tag pending">À développer</span></article>
+<article class="module-card"><div class="module-icon">▧</div><h3>Rapports PDF</h3><p>Accès aux synthèses disponibles.</p><a href="/module/rapports">Ouvrir les rapports →</a></article>
+<article class="module-card"><div class="module-icon">▣</div><h3>Sources scientifiques</h3><p>Références et niveau de preuve disponible.</p><a href="/module/preuves">Consulter les sources →</a></article>
+<article class="module-card"><div class="module-icon">⚙</div><h3>Paramètres</h3><p>Page de configuration à créer.</p><span class="tag pending">À développer</span></article>
+</div>
+<div class="notice"><strong>Note scientifique :</strong> les graphiques de cette page sont illustratifs et ne représentent pas des résultats mesurés. Les prédictions et évaluations de risque doivent être interprétées selon la qualité, la traçabilité et le domaine d’applicabilité des données utilisées.</div>
+</div>
+{% endblock %}

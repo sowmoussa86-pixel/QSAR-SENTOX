@@ -1,0 +1,54 @@
+```html
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SENTOX | Modules scientifiques</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Arial, sans-serif; background: #f4f7f5; color: #1f2933; }
+.layout { display: flex; min-height: 100vh; }
+.sidebar { width: 250px; flex-shrink: 0; background: #126b45; color: white; padding: 24px 16px; }
+.brand { font-size: 26px; font-weight: 800; margin-bottom: 6px; }
+.tagline { font-size: 12px; opacity: .85; margin-bottom: 28px; }
+.nav a { display: block; color: white; text-decoration: none; padding: 12px; border-radius: 8px; margin: 5px 0; font-size: 14px; }
+.nav a:hover { background: #0b8a58; }
+.main { flex: 1; min-width: 0; padding: 30px; }
+.topline { color: #64748b; font-size: 13px; margin-bottom: 20px; }
+.panel { background: white; padding: 24px; border-radius: 14px; border: 1px solid #e5ebe8; box-shadow: 0 3px 12px rgba(0,0,0,.04); }
+h1 { color: #126b45; margin-top: 0; }
+.note { color: #64748b; line-height: 1.6; }
+@media (max-width: 760px) {
+  .layout { display: block; }
+  .sidebar { width: 100%; }
+  .nav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; }
+  .main { padding: 18px; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <div class="brand">SENTOX</div>
+  <div class="tagline">Toxicologie et innovation scientifique</div>
+  <nav class="nav">
+    <a href="/">Accueil général</a>
+    <a href="/module/plantes">Plantes médicinales</a>
+    <a href="/module/molecules">Molécules &amp; QSAR</a>
+    <a href="/module/melanges">Mélanges &amp; interactions</a>
+    <a href="/module/toxicologie">Toxicologie &amp; exposition</a>
+    <a href="/module/preuves">Preuves scientifiques</a>
+    <a href="/module/rapports">Rapports d’expertise</a>
+  </nav>
+</aside>
+<main class="main">
+  <div class="topline">SENTOX / Espace scientifique</div>
+  <section class="panel">
+    {% block content %}{% endblock %}
+  </section>
+</main>
+</div>
+</body>
+</html>
+```
