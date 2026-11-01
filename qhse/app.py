@@ -529,6 +529,239 @@ def supprimer(identifiant):
 
 
 # ------------------------------------------------------------
+# ANALYSE TOXICOLOGIQUE SENTOX
+# ------------------------------------------------------------
+
+@app.route("/analyse-toxicologique", methods=["GET", "POST"])
+def page_analyse_toxicologique():
+
+    rapport = None
+    erreur = None
+
+    if request.method == "POST":
+        try:
+            profil = analyser_substance(
+                nom_substance=request.form.get("substance", ""),
+                numero_cas=request.form.get("numero_cas", ""),
+                voie_exposition=request.form.get(
+                    "voie_exposition", "Non renseignée"
+                ),
+                duree_exposition=request.form.get(
+                    "duree_exposition", ""
+                ),
+                effets_documentes=[
+                    x.strip() for x in request.form.get(
+                        "effets", ""
+                    ).split(";") if x.strip()
+                ],
+                absorption=request.form.get(
+                    "absorption", "Non renseignée"
+                ),
+                distribution=request.form.get(
+                    "distribution", "Non renseignée"
+                ),
+                metabolisme=request.form.get(
+                    "metabolisme", "Non renseigné"
+                ),
+                elimination=request.form.get(
+                    "elimination", "Non renseignée"
+                ),
+                organes_cibles=[
+                    x.strip() for x in request.form.get(
+                        "organes", ""
+                    ).split(";") if x.strip()
+                ],
+                effets_environnementaux=[
+                    x.strip() for x in request.form.get(
+                        "environnement", ""
+                    ).split(";") if x.strip()
+                ],
+                references=[
+                    x.strip() for x in request.form.get(
+                        "references", ""
+                    ).split(";") if x.strip()
+                ],
+                niveau_preuve=request.form.get(
+                    "niveau_preuve", "DONNEES NON VERIFIEES"
+                )
+            )
+
+            rapport = generer_rapport_toxicologique(profil)
+
+        except (ValueError, TypeError) as exc:
+            erreur = str(exc)
+
+    return render_template_string("""
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Analyse toxicologique - SENTOX</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background: #f1f5f9;
+                color: #172033;
+                margin: 0;
+                padding: 25px;
+            }
+            main {
+                max-width: 1000px;
+                margin: auto;
+            }
+            section {
+                background: white;
+                padding: 22px;
+                margin-bottom: 20px;
+                border-radius: 12px;
+            }
+            .grid {
+                display: grid;
+                grid-template-columns: repeat(
+                    auto-fit, minmax(240px, 1fr)
+                );
+                gap: 14px;
+            }
+            label {
+                display: block;
+                font-weight: bold;
+                margin-bottom: 6px;
+            }
+            input, select, textarea {
+                width: 100%;
+                padding: 10px;
+                border: 1px solid #cbd5e1;
+                border-radius: 6px;
+                box-sizing: border-box;
+            }
+            textarea { min-height: 75px; }
+            button {
+                background: #0369a1;
+                color: white;
+                border: 0;
+                padding: 12px 20px;
+                border-radius: 7px;
+                cursor: pointer;
+            }
+            pre {
+                white-space: pre-wrap;
+                overflow-wrap: anywhere;
+            }
+            .erreur { color: #b91c1c; }
+        </style>
+    </head>
+    <body>
+    <main>
+        <section>
+            <h1>SENTOX QHSE</h1>
+            <h2>Analyse toxicologique d'une substance</h2>
+
+            <form method="POST">
+                <div class="grid">
+                    <div>
+                        <label>Nom de la substance *</label>
+                        <input name="substance" required>
+                    </div>
+                    <div>
+                        <label>Numéro CAS</label>
+                        <input name="numero_cas">
+                    </div>
+                    <div>
+                        <label>Voie d'exposition</label>
+                        <select name="voie_exposition">
+                            <option>Non renseignée</option>
+                            <option>Inhalation</option>
+                            <option>Cutanée</option>
+                            <option>Ingestion</option>
+                            <option>Oculaire</option>
+                            <option>Multiple</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Durée d'exposition</label>
+                        <input name="duree_exposition"
+                               placeholder="Ex. 4 heures/jour">
+                    </div>
+                    <div>
+                        <label>Absorption</label>
+                        <input name="absorption">
+                    </div>
+                    <div>
+                        <label>Distribution</label>
+                        <input name="distribution">
+                    </div>
+                    <div>
+                        <label>Métabolisme</label>
+                        <input name="metabolisme">
+                    </div>
+                    <div>
+                        <label>Élimination</label>
+                        <input name="elimination">
+                    </div>
+                </div>
+
+                <p>
+                    <label>Effets toxicologiques documentés</label>
+                    <textarea name="effets"
+                        placeholder="Séparer les éléments par des points-virgules"></textarea>
+                </p>
+                <p>
+                    <label>Organes cibles potentiels</label>
+                    <input name="organes"
+                        placeholder="Ex. Foie ; Reins ; Poumons">
+                </p>
+                <p>
+                    <label>Effets environnementaux</label>
+                    <textarea name="environnement"></textarea>
+                </p>
+                <p>
+                    <label>Références scientifiques</label>
+                    <textarea name="references"></textarea>
+                </p>
+                <p>
+                    <label>Niveau de preuve</label>
+                    <select name="niveau_preuve">
+                        <option>DONNEES NON VERIFIEES</option>
+                        <option>DONNEES BIBLIOGRAPHIQUES</option>
+                        <option>PREDICTION</option>
+                        <option>DONNEES EXPERIMENTALES</option>
+                    </select>
+                </p>
+
+                <button type="submit">
+                    Générer l'analyse toxicologique
+                </button>
+            </form>
+        </section>
+
+        {% if erreur %}
+        <section class="erreur">
+            <h3>Erreur</h3>
+            {{ erreur }}
+        </section>
+        {% endif %}
+
+        {% if rapport %}
+        <section>
+            <h2>Résultat de l'analyse</h2>
+            <p>
+                Les informations affichées sont celles qui ont
+                été renseignées. Elles ne constituent pas une
+                validation toxicologique automatique.
+            </p>
+            <h3>Rapport structuré</h3>
+            <pre>{{ rapport }}</pre>
+        </section>
+        {% endif %}
+
+        <p><a href="/">Retour au tableau de bord</a></p>
+    </main>
+    </body>
+    </html>
+    """, rapport=rapport, erreur=erreur)
+
+# ------------------------------------------------------------
 # VERIFICATION DE SANTE DU SERVICE
 # ------------------------------------------------------------
 
