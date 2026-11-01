@@ -649,6 +649,48 @@ def page_analyse_toxicologique():
                 overflow-wrap: anywhere;
             }
             .erreur { color: #b91c1c; }
+                        .rapport-header {
+                border-bottom: 3px solid #087e8b;
+                padding-bottom: 15px;
+                margin-bottom: 20px;
+            }
+            .rapport-section {
+                border: 1px solid #dbe4ec;
+                border-radius: 8px;
+                padding: 16px;
+                margin: 15px 0;
+                background: #ffffff;
+            }
+            .rapport-section h3 {
+                color: #075985;
+                margin-top: 0;
+            }
+            .rapport-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                gap: 12px;
+            }
+            .rapport-item {
+                background: #f1f5f9;
+                padding: 12px;
+                border-radius: 6px;
+                overflow-wrap: anywhere;
+            }
+            .rapport-item strong {
+                display: block;
+                color: #334155;
+                margin-bottom: 6px;
+            }
+            .rapport-liste {
+                padding-left: 22px;
+                line-height: 1.7;
+            }
+            .rapport-note {
+                background: #fff7ed;
+                border-left: 4px solid #ea580c;
+                padding: 12px;
+                margin-top: 15px;
+            }
         </style>
     </head>
     <body>
