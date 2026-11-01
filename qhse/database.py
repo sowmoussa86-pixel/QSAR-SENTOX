@@ -164,6 +164,183 @@ def initialiser_base():
             )
         """)
 
+        # ====================================================
+        # COMPTES CENTRAUX ET ACCES AUX ENTREPRISES
+        # ====================================================
+
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS comptes_utilisateurs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                nom TEXT NOT NULL,
+                email TEXT NOT NULL UNIQUE,
+                mot_de_passe_hash TEXT NOT NULL,
+                role_global TEXT DEFAULT 'EXPERT',
+                statut TEXT DEFAULT 'ACTIF',
+                date_creation TEXT NOT NULL
+            )
+        """)
+
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS acces_entreprises (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                utilisateur_id INTEGER NOT NULL,
+                entreprise_id INTEGER NOT NULL,
+                role_entreprise TEXT NOT NULL,
+                date_creation TEXT NOT NULL,
+                UNIQUE(utilisateur_id, entreprise_id),
+                FOREIGN KEY(utilisateur_id)
+                    REFERENCES comptes_utilisateurs(id),
+                FOREIGN KEY(entreprise_id)
+                    REFERENCES entreprises(id)
+            )
+        """)
+
+        # ====================================================
+        # SITES DES ENTREPRISES
+        # ====================================================
+
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS sites (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                entreprise_id INTEGER NOT NULL,
+                nom TEXT NOT NULL,
+                adresse TEXT,
+                secteur TEXT,
+                responsable TEXT,
+                effectif INTEGER DEFAULT 0,
+                statut TEXT DEFAULT 'ACTIF',
+                date_creation TEXT NOT NULL,
+                FOREIGN KEY(entreprise_id)
+                    REFERENCES entreprises(id)
+            )
+        """)
+
+        # ====================================================
+        # MISSIONS D'EXPERTISE SENTOX
+        # ====================================================
+
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS missions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                entreprise_id INTEGER NOT NULL,
+                site_id INTEGER,
+                reference TEXT UNIQUE,
+                titre TEXT NOT NULL,
+                description TEXT,
+                type_prestation TEXT,
+                date_debut TEXT,
+                date_fin TEXT,
+                responsable_sentox TEXT,
+                statut TEXT DEFAULT 'PLANIFIEE',
+                date_creation TEXT NOT NULL,
+                FOREIGN KEY(entreprise_id)
+                    REFERENCES entreprises(id),
+                FOREIGN KEY(site_id)
+                    REFERENCES sites(id)
+            )
+        """)
+
+        # ====================================================
+        # RAPPORTS ET VALIDATION PAR L'EXPERT
+        # ====================================================
+
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS rapports (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                entreprise_id INTEGER NOT NULL,
+                mission_id INTEGER,
+                titre TEXT NOT NULL,
+                type_rapport TEXT,
+                contenu TEXT,
+                statut TEXT DEFAULT 'BROUILLON',
+                redacteur_id INTEGER,
+                validateur_id INTEGER,
+                date_creation TEXT NOT NULL,
+                date_validation TEXT,
+                date_publication TEXT,
+                observations_validation TEXT,
+                FOREIGN KEY(entreprise_id)
+                    REFERENCES entreprises(id),
+                FOREIGN KEY(mission_id)
+                    REFERENCES missions(id),
+                FOREIGN KEY(redacteur_id)
+                    REFERENCES comptes_utilisateurs(id),
+                FOREIGN KEY(validateur_id)
+                    REFERENCES comptes_utilisateurs(id)
+            )
+        """)
+
+        # ====================================================
+        # ABONNEMENTS DES ENTREPRISES
+        # ====================================================
+
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS abonnements (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                entreprise_id INTEGER NOT NULL,
+                formule TEXT NOT NULL,
+                montant REAL NOT NULL DEFAULT 0,
+                devise TEXT DEFAULT 'XOF',
+                periodicite TEXT,
+                date_debut TEXT NOT NULL,
+                date_fin TEXT,
+                statut TEXT DEFAULT 'EN_ATTENTE',
+                FOREIGN KEY(entreprise_id)
+                    REFERENCES entreprises(id)
+            )
+        """)
+
+        # ====================================================
+        # FACTURES : ABONNEMENTS ET PRESTATIONS
+        # ====================================================
+
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS factures (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                entreprise_id INTEGER NOT NULL,
+                mission_id INTEGER,
+                abonnement_id INTEGER,
+                numero_facture TEXT NOT NULL UNIQUE,
+                objet TEXT NOT NULL,
+                montant REAL NOT NULL,
+                devise TEXT DEFAULT 'XOF',
+                date_emission TEXT NOT NULL,
+                date_echeance TEXT,
+                statut TEXT DEFAULT 'IMPAYEE',
+                date_paiement TEXT,
+                FOREIGN KEY(entreprise_id)
+                    REFERENCES entreprises(id),
+                FOREIGN KEY(mission_id)
+                    REFERENCES missions(id),
+                FOREIGN KEY(abonnement_id)
+                    REFERENCES abonnements(id)
+            )
+        """)
+
+        # ====================================================
+        # INDEX POUR LES RECHERCHES PAR ENTREPRISE
+        # ====================================================
+
+        conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_sites_entreprise
+            ON sites(entreprise_id)
+        """)
+
+        conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_missions_entreprise
+            ON missions(entreprise_id)
+        """)
+
+        conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_rapports_entreprise
+            ON rapports(entreprise_id)
+        """)
+
+        conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_acces_utilisateur
+            ON acces_entreprises(utilisateur_id)
+        """)
+
         # HISTORIQUE
         conn.execute("""
             CREATE TABLE IF NOT EXISTS historique (
