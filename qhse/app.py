@@ -792,8 +792,105 @@ def page_analyse_toxicologique():
                 été renseignées. Elles ne constituent pas une
                 validation toxicologique automatique.
             </p>
-            <h3>Rapport structuré</h3>
-            <pre>{{ rapport }}</pre>
+            
+            <div class="rapport-header">
+                <h2>{{ rapport.get('titre', 'Rapport toxicologique SENTOX') }}</h2>
+                <p><strong>Date :</strong> {{ rapport.get('date', 'Non renseignée') }}</p>
+                <p><strong>Substance :</strong> {{ rapport.get('substance', 'Non renseignée') }}</p>
+                <p><strong>Numéro CAS :</strong> {{ rapport.get('numero_cas', 'Non renseigné') }}</p>
+            </div>
+
+            <div class="rapport-section">
+                <h3>1. Identification et exposition</h3>
+                <div class="rapport-grid">
+                    <div class="rapport-item">
+                        <strong>Voie d'exposition</strong>
+                        {{ rapport.get('voie_exposition', 'Non renseignée') }}
+                    </div>
+                    <div class="rapport-item">
+                        <strong>Durée d'exposition</strong>
+                        {{ rapport.get('duree_exposition', 'Non renseignée') }}
+                    </div>
+                    <div class="rapport-item">
+                        <strong>Niveau de preuve</strong>
+                        {{ rapport.get('niveau_preuve', 'Non renseigné') }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="rapport-section">
+                <h3>2. Conséquences toxicologiques</h3>
+                <ul class="rapport-liste">
+                    {% for element in rapport.get('consequences', []) %}
+                        <li>{{ element }}</li>
+                    {% else %}
+                        <li>Aucun effet renseigné.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="rapport-section">
+                <h3>3. Profil ADME-Tox</h3>
+                {% set adme = rapport.get('adme_tox', {}) %}
+                <div class="rapport-grid">
+                    {% for cle, valeur in adme.items() %}
+                        <div class="rapport-item">
+                            <strong>{{ cle|capitalize }}</strong>
+                            {{ valeur if valeur else 'Non renseigné' }}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="rapport-section">
+                <h3>4. Organes cibles</h3>
+                <ul class="rapport-liste">
+                    {% for organe in rapport.get('organes_cibles', []) %}
+                        <li>{{ organe }}</li>
+                    {% else %}
+                        <li>Aucun organe cible renseigné.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="rapport-section">
+                <h3>5. Risques environnementaux</h3>
+                <ul class="rapport-liste">
+                    {% for effet in rapport.get('risques_environnementaux', []) %}
+                        <li>{{ effet }}</li>
+                    {% else %}
+                        <li>Aucun effet environnemental renseigné.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="rapport-section">
+                <h3>6. Mesures de prévention recommandées</h3>
+                <ol class="rapport-liste">
+                    {% for mesure in rapport.get('mesures_prevention', []) %}
+                        <li>{{ mesure }}</li>
+                    {% else %}
+                        <li>Aucune mesure renseignée.</li>
+                    {% endfor %}
+                </ol>
+            </div>
+
+            <div class="rapport-section">
+                <h3>7. Références scientifiques</h3>
+                <ul class="rapport-liste">
+                    {% for reference in rapport.get('references', []) %}
+                        <li>{{ reference }}</li>
+                    {% else %}
+                        <li>Aucune référence renseignée.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="rapport-note">
+                <h3>8. Limites de l'analyse</h3>
+                {{ rapport.get('limites', 'Les limites de cette analyse doivent être précisées.') }}
+            </div>
+
         </section>
         {% endif %}
 
