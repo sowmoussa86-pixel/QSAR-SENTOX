@@ -1,3 +1,4 @@
+
 # ============================================================
 # SENTOX QHSE - APPLICATION WEB V1
 # Registre des risques professionnels
@@ -14,7 +15,11 @@ from database import (
 )
 
 from risk_engine import evaluer_risque
-
+from analyse_toxicologique import (
+    analyser_substance,
+    generer_prevention,
+    generer_rapport_toxicologique
+)
 
 app = Flask(__name__)
 app.secret_key = "sentox-qhse-demo-2026"
